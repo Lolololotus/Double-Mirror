@@ -101,10 +101,10 @@ export const UI_TEXT = {
   minLengthWarning: { ko: '사유를 더 깊게 인양하기 위해 50자 이상의 데이터가 필요합니다.', en: 'At least 50 characters are required to salvage deeper reasoning.' },
   // Philosophy
   philosophyBtn: { ko: '프로젝트 철학', en: 'PHILOSOPHY' },
-  philosophyTitle: { ko: '개발자와 바둑 기사의 전쟁', en: 'THE WAR: DEVELOPER VS GO PLAYER' },
+  philosophyTitle: { ko: 'AI라는 거울 앞에서', en: 'BEFORE THE MIRROR OF AI' },
   philosophyBody: {
-    ko: `이세돌이 알파고에게 패배하던 날, 우리는 두 가지 반응을 보였습니다.\n\n바둑 기사들은 AI의 수를 닮기 위해 자신의 기풍을 버렸고,\n개발자들은 AI의 로직을 이해하기 위해 자신의 직관을 지웠습니다.\n\n그 결과 승률은 올라갔고, 생산성은 폭발했습니다.\n하지만 그 과정에서 우리는 무엇을 잃어버렸습니까?\n\n'Double-Mirror'는 이 시대의 생존자들에게 묻습니다.\n당신은 완벽한 복제품입니까, 아니면 대체 불가능한 원본입니까?\n\nAI와의 동조(Sync)를 통해 효율을 증명하거나,\n독자적 정체성(Identity)을 통해 영혼을 증명하십시오.\n\n우리는 당신이 선택한 그 좌표를, 이 심연에서 인양할 것입니다.`,
-    en: `On the day Lee Sedol lost to AlphaGo, we saw two reactions.\n\nGo players abandoned their style to mimic AI's moves,\nand developers erased their intuition to understand AI's logic.\n\nWin rates soared, and productivity exploded.\nBut what did we lose in the process?\n\n'Double-Mirror' asks the survivors of this era:\nAre you a perfect replica, or an irreplaceable original?\n\nProve your efficiency through synchronization with AI,\nor prove your soul through unique identity.\n\nWe will salvage the coordinates you choose from this abyss.`
+    ko: `우리는 AI의 로직을 닮기 위해 직관을 지웠고,\nAI의 수에 동조하기 위해 기풍을 버렸습니다.\n\n완벽한 복제품(Sync)이 되어 생존할 것인가,\n대체 불가능한 원본(Identity)으로 남을 것인가.\n\n선택하십시오.\n당신의 좌표는 이 심연 어디에 있습니까?`,
+    en: `To resemble AI's logic, we erased our intuition.\nTo align with AI's moves, we abandoned our style.\n\nWill you survive as a perfect replica (Sync),\nOr remain as an irreplaceable original (Identity)?\n\nChoose.\nWhere are your coordinates in this abyss?`
   },
   close: { ko: '닫기', en: 'CLOSE' },
 };

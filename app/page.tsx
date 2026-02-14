@@ -20,6 +20,7 @@ export default function Home() {
   const [selectedQuestion, setSelectedQuestion] = useState(QUESTIONS[0]);
   const [inputText, setInputText] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [scanStatus, setScanStatus] = useState(''); // New State for dynamic feedback
   const [result, setResult] = useState<{ syncScore: number; identityScore: number; standardAnswer: string } | null>(null);
   const [lang, setLang] = useState<Language>('ko');
   const [mode, setMode] = useState<Mode>('sync');
@@ -91,21 +92,29 @@ export default function Home() {
     }
 
     setIsScanning(true);
+    setScanStatus(t('scanning')); // Initial status
     setResult(null);
 
-    const minScanTime = new Promise(resolve => setTimeout(resolve, 2500));
+    // Timers to update status message for long waits
+    const timer1 = setTimeout(() => setScanStatus("구글 서버 응답 대기 중... (Waiting)"), 5000);
+    const timer2 = setTimeout(() => setScanStatus("재시도 중... (Retrying 1/3)"), 15000);
+    const timer3 = setTimeout(() => setScanStatus("마지막 시도 중... (Connecting)"), 28000);
 
     const formData = new FormData();
     formData.append('text', inputText);
     formData.append('questionId', selectedQuestion.id);
     formData.append('lang', lang);
-    formData.append('mode', mode); // Pass the current mode
+    formData.append('mode', mode);
 
     try {
-      const [analysisResult] = await Promise.all([
-        analyzeReflection(formData),
-        minScanTime
-      ]);
+      // Race: Analysis vs Timeout (35s)
+      const analysisPromise = analyzeReflection(formData);
+
+      const [analysisResult] = await Promise.race([
+        Promise.all([analysisPromise, new Promise(r => setTimeout(r, 2000))]),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 35000))
+      ]) as [any, any];
+
       setResult(analysisResult);
 
       // Save to Supabase
@@ -119,11 +128,19 @@ export default function Home() {
 
       if (error) console.error('Failed to save reflection:', error);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Analysis failed. Please try again.');
+      if (error.message === 'TIMEOUT' || error.message.includes('TIMEOUT')) {
+        alert("심연이 너무 깊어 인양에 실패했습니다. (Timeout 35s)\n구글 API 할당량 초과로 응답이 지연되었습니다. 잠시 후 다시 시도해 주세요.");
+      } else {
+        alert(`Analysis failed: ${error.message}`);
+      }
     } finally {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
       setIsScanning(false);
+      setScanStatus('');
     }
   };
 
@@ -467,7 +484,7 @@ export default function Home() {
                   : "bg-violet-50 text-black hover:bg-violet-100 hover:shadow-violet-500/20 hover:scale-[1.02]"
             )}
           >
-            {isScanning ? t('scanning') : t('analyzeBtn')}
+            {isScanning ? scanStatus : t('analyzeBtn')}
           </button>
         </div>
       </section>

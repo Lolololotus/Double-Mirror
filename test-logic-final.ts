@@ -6,24 +6,18 @@ import path from 'path';
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 async function runTest() {
-    console.log("🚀 Starting Model Verification...");
+    console.log("🚀 Starting Model Verification (Generic Gemini Pro)...");
 
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    // Dynamic import
+    const { calculateDualScore } = await import('./lib/gemini');
 
-    // Testing Lite model for stability/quota
-    const MODEL_NAME = 'models/gemini-2.0-flash-lite-preview-02-05'; // Guessing based on pattern? No, use exact from list.
-    // List said: models/gemini-2.0-flash-lite-001
-    const EXACT_MODEL_NAME = 'models/gemini-2.0-flash-lite-001';
-
-    console.log(`\n🧪 Testing Model: ${EXACT_MODEL_NAME}`);
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
-    const model = genAI.getGenerativeModel({ model: EXACT_MODEL_NAME }, { apiVersion: 'v1beta' });
+    const qId = 'routine';
+    const userAns = "Test answer about routine.";
 
     try {
-        const result = await model.generateContent("Hello.");
-        console.log("✅ Model Response:", result.response.text());
-        console.log("✨ Model is WORKING!");
+        const scores = await calculateDualScore(qId, userAns, 'ko');
+        console.log("✅ Score Result:", scores);
+        console.log("✨ Model is WORKING! (gemini-pro classic)");
     } catch (e: any) {
         console.error("❌ Model Test Failed:", e.message);
     }

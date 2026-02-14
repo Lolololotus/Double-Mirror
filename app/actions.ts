@@ -26,14 +26,15 @@ export async function saveTrainingLog(session: TrainingSession) {
 }
 
 // Helper for Retry Logic (Increased retries for stability)
-async function withRetry<T>(operation: () => Promise<T>, retries = 2, delay = 3000): Promise<T> {
+async function withRetry<T>(operation: () => Promise<T>, retries = 3, delay = 25000, attempt = 1): Promise<T> { // 25s start
     try {
+        if (attempt > 1) console.log(`🔄 Retry Attempt ${attempt - 1}/${retries} (Waited ${delay / 1000}s)`);
         return await operation();
     } catch (error: any) {
         if (retries > 0 && (error.message.includes('429') || error.message.includes('503') || error.message.includes('UsageLimit'))) {
-            console.log(`⚠️ API Error (${error.message}). Retrying in ${delay}ms... (Retries left: ${retries})`);
+            console.log(`⚠️ API Error (${error.message}). Waiting ${delay / 1000}s before next attempt... (Retries left: ${retries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return withRetry(operation, retries - 1, delay * 1.5); // Exponential backoffish
+            return withRetry(operation, retries - 1, delay * 1.5, attempt + 1); // 25s -> 37.5s -> 56s
         }
         throw error;
     }

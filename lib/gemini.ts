@@ -3,16 +3,33 @@ import { QUESTIONS, Language } from './constants';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-// Debugging Log (Server Side)
-console.log("Initialize Gemini. Key exists?", !!apiKey);
+// Debugging Log (Server Side) - User Request
+console.log("✅ GEMINI_API_KEY Configured:", process.env.GEMINI_API_KEY ? `${process.env.GEMINI_API_KEY.substring(0, 10)}...` : "MISSING");
 
-const genAI = new GoogleGenerativeAI(apiKey || 'MISSING_KEY');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
 
-// [CRITICAL] Switch to models/gemini-pro-latest (v1beta) as 1.5-flash is unavailable for this key
-// This model exists in the user's available list.
-const textModel = genAI.getGenerativeModel({ model: 'models/gemini-pro-latest' }, { apiVersion: 'v1beta' });
+// [CRITICAL] Hybrid Model Configuration (Safety First)
+// Primary: gemini-1.5-flash (v1 Stable) - Fast & Cheap
+// Fallback: gemini-pro-latest (v1beta) - The ONLY working model for this key
+const primaryModel = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' }, { apiVersion: 'v1' });
+const fallbackModel = genAI.getGenerativeModel({ model: 'models/gemini-pro-latest' }, { apiVersion: 'v1beta' });
 
-// Removed Embedding Model as per emergency instruction
+// Helper to handle Fallback
+async function generateContentWithFallback(prompt: string): Promise<string> {
+    try {
+        console.log("🚀 Attempting Model: models/gemini-1.5-flash (v1)");
+        const result = await primaryModel.generateContent(prompt);
+        return result.response.text();
+    } catch (error: any) {
+        console.warn(`⚠️ Primary Model Failed (${error.message}). Switching to Fallback...`);
+        console.log("🚀 Switching to Model: models/gemini-1.0-pro (v1)");
+        const result = await fallbackModel.generateContent(prompt);
+        return result.response.text();
+    }
+}
+
+// [CRITICAL] EMBEDDING MODEL REMOVED.
+// We now rely solely on Generative Scoring (textModel).
 
 async function calculateGenerativeScore(userText: string, standardText: string, rubric: string, lang: Language): Promise<number> {
     try {
@@ -54,9 +71,12 @@ async function calculateGenerativeScore(userText: string, standardText: string, 
         {"score": <number>}
         `;
 
-        const result = await textModel.generateContent(prompt);
-        const responseText = result.response.text();
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        // 💡 Use Hybrid Engine (Fallback)
+        const responseText = await generateContentWithFallback(prompt);
+
+        // Clean markdown code blocks if present
+        const cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
 
         if (jsonMatch) {
             const data = JSON.parse(jsonMatch[0]);
@@ -175,17 +195,25 @@ export async function generateFeedback(userText: string, standardText: string, q
         {"feedback": "...", "trainingTip": "..."}
         `;
 
-        const result = await textModel.generateContent(prompt);
-        const responseText = result.response.text();
+        const responseText = await generateContentWithFallback(prompt);
 
-        // Parsing JSON safely
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            return JSON.parse(jsonMatch[0]);
-        } else {
-            return { feedback: responseText, trainingTip: "Analysis complete." };
+        // Remove Markdown formatting (```json ... ```)
+        const cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        try {
+            const data = JSON.parse(cleanText);
+            return {
+                feedback: data.feedback || "분석을 완료했습니다.",
+                trainingTip: data.trainingTip || "계속 정진하세요."
+            };
+        } catch (e) {
+            console.error("JSON Parse Error:", e);
+            // Fallback for parser error
+            return {
+                feedback: responseText, // Return raw text if JSON fails
+                trainingTip: "Data parsing error."
+            };
         }
-
     } catch (error) {
         console.error("❌ Error in generateFeedback:", error);
         throw error; // Rethrow so we can handle it in the caller
