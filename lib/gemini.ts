@@ -14,9 +14,10 @@ function getModels() {
     const apiOptions = { apiVersion: 'v1beta' };
 
     return {
-        // [Vercel Patch] Prepended 'models/' for strict environment recognition
-        primaryModel: genAI.getGenerativeModel({ model: 'models/gemini-flash-latest', ...config }, apiOptions),
-        fallbackModel: genAI.getGenerativeModel({ model: 'models/gemini-pro-latest', ...config }, apiOptions)
+        // [Stability Patch] 'latest' was pointing to experimental Gemini 3.
+        // Switching to confirmed stable 2.0 identifiers.
+        primaryModel: genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash', ...config }, apiOptions),
+        fallbackModel: genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash-lite', ...config }, apiOptions)
     };
 }
 
