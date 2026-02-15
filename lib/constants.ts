@@ -67,8 +67,11 @@ export const UI_TEXT = {
   yourReflection: { ko: '당신의 로직', en: 'YOUR LOGIC' },
   placeholder: { ko: '여기에 당신의 생각을 입력하십시오...', en: 'Input your reasoning here...' },
   analyzeBtn: { ko: '분석 시작', en: 'INITIATE ANALYSIS' },
-  scanning: { ko: '분석 중...', en: 'ANALYZING...' },
-  waiting: { ko: '데이터 대기 중', en: 'AWAITING DATA' },
+  scanning: { ko: '사유 분석 시작...', en: 'INITIATING ANALYSIS...' },
+  extracting: { ko: '데이터 인양 중...', en: 'SALVAGING DATA...' },
+  refining: { ko: '사유 정제 중...', en: 'REFINING THOUGHT...' },
+  polishing: { ko: '거울 닦는 중...', en: 'POLISHING MIRROR...' },
+  waiting: { ko: '시스템 신호 대기 중', en: 'AWAITING SIGNAL...' },
   standardReflection: { ko: 'AI 표준 로직', en: 'AI STANDARD LOGIC' },
   analysisResult: { ko: '분석 데이터', en: 'ANALYSIS DATA' },
   syncMode: { ko: '동기화 모드', en: 'SYNC MODE' },
@@ -76,7 +79,10 @@ export const UI_TEXT = {
   // Deep-Reso Anchor
   anchorText: { ko: 'Coming Soon, \n deep-reso: 사유의 깊이를 인양 중입니다.', en: 'Coming Soon, \n deep-reso: Salvaging the depth of thought.' },
   // Gateway
-  gatewayTitle: { ko: 'AI라는 거울 앞에서,\n당신의 사유는 증명될 수 있습니까?', en: 'Before the mirror of AI,\ncan your reasoning be proven?' },
+  gatewayTitle: {
+    ko: 'AI라는 거울 앞에서,\n당신의 유일함은 증명될 수 있는가?',
+    en: 'Before the mirror of AI,\ncan your uniqueness be proven?'
+  },
   enterBtn: { ko: '프로토콜 진입', en: 'ENTER PROTOCOL' },
   // Training Mode
   testMode: { ko: '테스트 모드', en: 'TEST MODE' },

@@ -68,7 +68,13 @@ export async function analyzeReflection(formData: FormData) {
             trainingTip
         };
     } catch (error: any) {
-        console.error('❌ Analysis failed in Server Action:', error);
+        // [PRODUCTION LOG] Detailed Error Tracing
+        console.error('❌ Analysis failed in Server Action:', {
+            message: error.message,
+            status: error.status,
+            code: error.code,
+            details: error.details
+        });
 
         // Error Classification for Client
         const msg = error.message || '';

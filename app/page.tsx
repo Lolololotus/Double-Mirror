@@ -107,28 +107,21 @@ export default function Home() {
     formData.append('mode', mode);
 
     let attempt = 0;
-    const maxAttempts = 5; // Increased from 3 to 5
-    const delays = [2000, 5000, 10000, 15000]; // Aggressive Backoff: 2s -> 5s -> 10s -> 15s
+    const maxAttempts = 3; // Fixed 3 attempts for paid tier
+    const delays = [1000, 2000, 3000]; // Fast recovery: 1s -> 2s -> 3s
 
     while (attempt < maxAttempts) {
       attempt++;
 
       try {
-        setScanStatus(attempt === 1
-          ? t('scanning')
-          : `${t('scanning')} (Retry ${attempt - 1}/${maxAttempts - 1})...`
-        );
+        const statuses = [t('scanning'), t('extracting'), t('refining'), t('polishing')];
+        setScanStatus(statuses[attempt - 1] || t('polishing'));
 
         // Abort if user cancelled (by starting new request)
         if (latestRequestId.current !== currentRequestId) return;
 
-        // Dynamic Timeout: Increases with each attempt
-        // Attempt 1: 15s
-        // Attempt 2: 20s
-        // Attempt 3: 25s
-        // Attempt 4: 30s
-        // Attempt 5: 35s
-        const timeoutMs = 15000 + (attempt - 1) * 5000;
+        // Dynamic Timeout: 10s -> 12s -> 15s (Keep it tight)
+        const timeoutMs = 10000 + (attempt * 2000);
 
         const analysisPromise = analyzeReflection(formData);
 
@@ -178,7 +171,7 @@ export default function Home() {
 
         // Final Failure
         if (attempt === maxAttempts) {
-          alert("심연이 너무 깊어 인양에 실패했습니다. (System Keep-Alive failed)\n서버가 매우 혼잡합니다. 1분 뒤에 다시 시도해주세요.");
+          alert("거울의 심도가 너무 깊어 잠시 연결이 지연되고 있습니다.\n(System Busy: Please try again in 30 seconds)");
         }
       }
     }

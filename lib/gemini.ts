@@ -8,32 +8,25 @@ console.log("✅ GEMINI_API_KEY Configured:", process.env.GEMINI_API_KEY ? `${pr
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
 
-// [CRITICAL] Hybrid Model Configuration (Safety First)
-// Primary: gemini-1.5-flash (v1 Stable) - Fast & Cheap
-// Fallback 1: gemini-1.5-flash-8b (v1beta) - Ultra Fast & Cheap (New)
-// Fallback 2: gemini-pro (v1) - Legacy Stable (Old Faithful)
+// [PAID TIER OPTIMIZATION]
+// Primary: gemini-1.5-flash (v1 Update) - High Speed, Low Cost
+// Fallback: gemini-1.5-pro (v1 Update) - High Intelligence, Stability
 const primaryModel = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' }, { apiVersion: 'v1' });
-const fallbackModel1 = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash-8b' }, { apiVersion: 'v1beta' });
-const fallbackModel2 = genAI.getGenerativeModel({ model: 'models/gemini-pro' }, { apiVersion: 'v1' });
+const fallbackModel = genAI.getGenerativeModel({ model: 'models/gemini-1.5-pro' }, { apiVersion: 'v1' });
 
 // Helper to handle Fallback
 async function generateContentWithFallback(prompt: string): Promise<string> {
     try {
-        console.log("🚀 Attempting Model 1: gemini-1.5-flash");
+        console.log("🚀 [Primary] Calling gemini-1.5-flash...");
         const result = await primaryModel.generateContent(prompt);
         return result.response.text();
     } catch (error: any) {
-        console.warn(`⚠️ Model 1 Failed (${error.message}). Switching to Fallback 1...`);
-        try {
-            console.log("🚀 Attempting Model 2: gemini-1.5-flash-8b");
-            const result = await fallbackModel1.generateContent(prompt);
-            return result.response.text();
-        } catch (error2: any) {
-            console.warn(`⚠️ Model 2 Failed (${error2.message}). Switching to Fallback 2 (Last Resort)...`);
-            console.log("🚀 Attempting Model 3: gemini-pro");
-            const result = await fallbackModel2.generateContent(prompt);
-            return result.response.text();
-        }
+        console.warn(`⚠️ [Primary Failed] ${error.message}. Switching to Fallback (Pro)...`);
+
+        // Final Fallback to Pro
+        console.log("🚀 [Fallback] Calling gemini-1.5-pro...");
+        const result = await fallbackModel.generateContent(prompt);
+        return result.response.text();
     }
 }
 
