@@ -80,7 +80,7 @@ export const UI_TEXT = {
   anchorText: { ko: 'Coming Soon, \n deep-reso: 사유의 깊이를 인양 중입니다.', en: 'Coming Soon, \n deep-reso: Salvaging the depth of thought.' },
   // Gateway
   gatewayTitle: {
-    ko: 'AI라는 거울 앞에서,\n당신의 사유는 어디를 향하고 있습니까?',
+    ko: 'AI라는 거울 앞에서,\n당신은 어디를 보고 있습니까?',
     en: 'Before the mirror of AI,\nwhere is your reasoning headed?'
   },
   enterBtn: { ko: '프로토콜 진입', en: 'ENTER PROTOCOL' },
