@@ -169,7 +169,8 @@ export default function Home() {
         console.warn(`Attempt ${attempt} failed:`, error.message);
 
         if (attempt === maxAttempts) {
-          alert("거울의 심도가 너무 깊어 잠시 연결이 지연되고 있습니다.\n(System Busy: Please try again later)");
+          console.error("🏁 [Client] All attempts exhausted. Final Error:", error.message);
+          alert(`시스템 연결 장애가 지속되고 있습니다.\n\n[진단 정보]: ${error.message}\n\n잠시 후 다시 시도해 주세요.`);
         } else {
           await new Promise(r => setTimeout(r, delays[attempt - 1]));
         }
