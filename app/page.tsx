@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QUESTIONS, UI_TEXT, Language } from '@/lib/constants';
 import { analyzeReflection } from './actions';
@@ -24,6 +24,9 @@ export default function Home() {
   const [result, setResult] = useState<{ syncScore: number; identityScore: number; standardAnswer: string } | null>(null);
   const [lang, setLang] = useState<Language>('ko');
   const [mode, setMode] = useState<Mode>('sync');
+
+  // Stale Request Prevention
+  const latestRequestId = useRef<number>(0);
 
   // UI State
   const [isTrainingMode, setIsTrainingMode] = useState(false);
@@ -85,20 +88,17 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
 
-    // Safety check (should be covered by UI state, but just in case)
     if (!session) {
       alert(t('loginRequired'));
       return;
     }
 
     setIsScanning(true);
-    setScanStatus(t('scanning')); // Initial status
     setResult(null);
 
-    // Timers to update status message for long waits
-    const timer1 = setTimeout(() => setScanStatus("구글 서버 응답 대기 중... (Waiting)"), 5000);
-    const timer2 = setTimeout(() => setScanStatus("재시도 중... (Retrying 1/3)"), 15000);
-    const timer3 = setTimeout(() => setScanStatus("마지막 시도 중... (Connecting)"), 28000);
+    // Increment Request ID to invalidate previous attempts
+    const currentRequestId = Date.now();
+    latestRequestId.current = currentRequestId;
 
     const formData = new FormData();
     formData.append('text', inputText);
@@ -106,42 +106,80 @@ export default function Home() {
     formData.append('lang', lang);
     formData.append('mode', mode);
 
-    try {
-      // Race: Analysis vs Timeout (35s)
-      const analysisPromise = analyzeReflection(formData);
+    let attempt = 0;
+    const maxAttempts = 3;
+    const delays = [2000, 4000]; // Wait 2s, then 4s
 
-      const [analysisResult] = await Promise.race([
-        Promise.all([analysisPromise, new Promise(r => setTimeout(r, 2000))]),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 35000))
-      ]) as [any, any];
+    while (attempt < maxAttempts) {
+      attempt++;
 
-      setResult(analysisResult);
+      try {
+        setScanStatus(attempt === 1
+          ? t('scanning')
+          : `${t('scanning')} (Retry ${attempt - 1}/${maxAttempts - 1})...`
+        );
 
-      // Save to Supabase
-      const { error } = await supabase.from('reflections').insert({
-        email: session.user.email,
-        selected_protocol: selectedQuestion.id,
-        user_input: inputText,
-        sync_score: analysisResult.syncScore,
-        identity_score: analysisResult.identityScore,
-      });
+        // Abort if user cancelled (by starting new request)
+        if (latestRequestId.current !== currentRequestId) return;
 
-      if (error) console.error('Failed to save reflection:', error);
+        // Dynamic Timeout: 15s -> 20s -> 25s
+        const timeoutMs = 15000 + (attempt - 1) * 5000;
 
-    } catch (error: any) {
-      console.error(error);
-      if (error.message === 'TIMEOUT' || error.message.includes('TIMEOUT')) {
-        alert("심연이 너무 깊어 인양에 실패했습니다. (Timeout 35s)\n구글 API 할당량 초과로 응답이 지연되었습니다. 잠시 후 다시 시도해 주세요.");
-      } else {
-        alert(`Analysis failed: ${error.message}`);
+        const analysisPromise = analyzeReflection(formData);
+
+        const [analysisResult] = await Promise.race([
+          analysisPromise.then(res => [res]),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), timeoutMs))
+        ]) as [any];
+
+        // Success! Check ID again before updating
+        if (latestRequestId.current !== currentRequestId) return;
+
+        setResult(analysisResult);
+
+        // Save to Supabase
+        const { error } = await supabase.from('reflections').insert({
+          email: session.user.email,
+          selected_protocol: selectedQuestion.id,
+          user_input: inputText,
+          sync_score: analysisResult.syncScore,
+          identity_score: analysisResult.identityScore,
+        });
+        if (error) console.error('Failed to save reflection:', error);
+
+        setIsScanning(false);
+        setScanStatus('');
+        return; // Exit loop on success
+
+      } catch (error: any) {
+        // Check Stale
+        if (latestRequestId.current !== currentRequestId) return;
+
+        console.warn(`Attempt ${attempt} failed:`, error.message);
+
+        const isRetryable = error.message.includes('RETRY_NEEDED') || error.message.includes('TIMEOUT');
+        const isFatal = error.message.includes('FATAL');
+
+        if (isFatal) {
+          alert(`오류 발생: ${error.message.replace('FATAL: ', '')}`);
+          break; // Stop retrying
+        }
+
+        if (isRetryable && attempt < maxAttempts) {
+          // Wait before next retry
+          await new Promise(r => setTimeout(r, delays[attempt - 1]));
+          continue;
+        }
+
+        // Final Failure
+        if (attempt === maxAttempts) {
+          alert("심연이 너무 깊어 인양에 실패했습니다. (Google API Busy)\n잠시 후 다시 시도해 주세요.");
+        }
       }
-    } finally {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      setIsScanning(false);
-      setScanStatus('');
     }
+
+    setIsScanning(false);
+    setScanStatus('');
   };
 
   const toggleLang = () => setLang(prev => prev === 'ko' ? 'en' : 'ko');

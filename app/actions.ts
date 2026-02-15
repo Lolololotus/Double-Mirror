@@ -25,20 +25,8 @@ export async function saveTrainingLog(session: TrainingSession) {
     // await db.trainingSessions.create({ data: session });
 }
 
-// Helper for Retry Logic (Increased retries for stability)
-async function withRetry<T>(operation: () => Promise<T>, retries = 3, delay = 25000, attempt = 1): Promise<T> { // 25s start
-    try {
-        if (attempt > 1) console.log(`🔄 Retry Attempt ${attempt - 1}/${retries} (Waited ${delay / 1000}s)`);
-        return await operation();
-    } catch (error: any) {
-        if (retries > 0 && (error.message.includes('429') || error.message.includes('503') || error.message.includes('UsageLimit'))) {
-            console.log(`⚠️ API Error (${error.message}). Waiting ${delay / 1000}s before next attempt... (Retries left: ${retries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return withRetry(operation, retries - 1, delay * 1.5, attempt + 1); // 25s -> 37.5s -> 56s
-        }
-        throw error;
-    }
-}
+// Helper for Retry Logic (Removed to prevent Vercel Timeout)
+// We now Fail Fast and let Client handle retries.
 
 export async function analyzeReflection(formData: FormData) {
     const text = formData.get('text') as string;
@@ -48,24 +36,24 @@ export async function analyzeReflection(formData: FormData) {
 
     const currentQuestion = QUESTIONS.find(q => q.id === questionId);
     if (!text || !questionId || !currentQuestion) {
-        throw new Error('Missing input or invalid question');
+        throw new Error('FATAL: Missing input or invalid question');
     }
 
     try {
-        // Calculate scores with Retry
+        // Calculate scores (No internal retry)
         let syncScore = 0;
         let identityScore = 0;
         let feedback = "";
         let trainingTip = "";
         const standardAnswer = currentQuestion.standardAnswer[lang];
 
-        // 1. Calculate Scores (Critical) -> Wrapped in Retry
-        const scoreResult = await withRetry(() => calculateDualScore(questionId, text, lang));
+        // 1. Calculate Scores
+        const scoreResult = await calculateDualScore(questionId, text, lang);
         syncScore = scoreResult.syncScore;
         identityScore = scoreResult.identityScore;
 
-        // 2. Generate Feedback (Optional) -> Wrapped in Retry
-        const feedbackResult = await withRetry(() => generateFeedback(text, standardAnswer, currentQuestion.text[lang], lang, mode));
+        // 2. Generate Feedback
+        const feedbackResult = await generateFeedback(text, standardAnswer, currentQuestion.text[lang], lang, mode);
         feedback = feedbackResult.feedback;
         trainingTip = feedbackResult.trainingTip;
 
@@ -79,13 +67,18 @@ export async function analyzeReflection(formData: FormData) {
         };
     } catch (error: any) {
         console.error('❌ Analysis failed in Server Action:', error);
-        // Provide user-friendly message for Retry status
-        if (error.message.includes('429')) {
-            throw new Error(`시스템이 사유를 인양하기 위해 심호흡 중입니다. (Rate Limit). 잠시 후 다시 시도해주세요.`);
+
+        // Error Classification for Client
+        const msg = error.message || '';
+
+        if (msg.includes('429') || msg.includes('503') || msg.includes('UsageLimit') || msg.includes('Overloaded')) {
+            throw new Error(`RETRY_NEEDED: ${msg}`);
         }
-        if (error.message.includes('404')) {
-            throw new Error(`모델을 찾을 수 없습니다. (404). 관리자에게 문의하세요.`);
+
+        if (msg.includes('404')) {
+            throw new Error(`FATAL: Model not found (404).`);
         }
-        throw new Error(`Analysis failed logic: ${error.message}`);
+
+        throw new Error(`FATAL: ${msg}`);
     }
 }
