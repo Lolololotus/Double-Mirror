@@ -107,8 +107,8 @@ export default function Home() {
     formData.append('mode', mode);
 
     let attempt = 0;
-    const maxAttempts = 3;
-    const delays = [2000, 4000]; // Wait 2s, then 4s
+    const maxAttempts = 5; // Increased from 3 to 5
+    const delays = [2000, 5000, 10000, 15000]; // Aggressive Backoff: 2s -> 5s -> 10s -> 15s
 
     while (attempt < maxAttempts) {
       attempt++;
@@ -122,7 +122,12 @@ export default function Home() {
         // Abort if user cancelled (by starting new request)
         if (latestRequestId.current !== currentRequestId) return;
 
-        // Dynamic Timeout: 15s -> 20s -> 25s
+        // Dynamic Timeout: Increases with each attempt
+        // Attempt 1: 15s
+        // Attempt 2: 20s
+        // Attempt 3: 25s
+        // Attempt 4: 30s
+        // Attempt 5: 35s
         const timeoutMs = 15000 + (attempt - 1) * 5000;
 
         const analysisPromise = analyzeReflection(formData);
@@ -173,7 +178,7 @@ export default function Home() {
 
         // Final Failure
         if (attempt === maxAttempts) {
-          alert("심연이 너무 깊어 인양에 실패했습니다. (Google API Busy)\n잠시 후 다시 시도해 주세요.");
+          alert("심연이 너무 깊어 인양에 실패했습니다. (System Keep-Alive failed)\n서버가 매우 혼잡합니다. 1분 뒤에 다시 시도해주세요.");
         }
       }
     }

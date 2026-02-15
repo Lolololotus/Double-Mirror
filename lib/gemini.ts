@@ -10,21 +10,30 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY'
 
 // [CRITICAL] Hybrid Model Configuration (Safety First)
 // Primary: gemini-1.5-flash (v1 Stable) - Fast & Cheap
-// Fallback: gemini-pro-latest (v1beta) - The ONLY working model for this key
+// Fallback 1: gemini-1.5-flash-8b (v1beta) - Ultra Fast & Cheap (New)
+// Fallback 2: gemini-pro (v1) - Legacy Stable (Old Faithful)
 const primaryModel = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' }, { apiVersion: 'v1' });
-const fallbackModel = genAI.getGenerativeModel({ model: 'models/gemini-pro-latest' }, { apiVersion: 'v1beta' });
+const fallbackModel1 = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash-8b' }, { apiVersion: 'v1beta' });
+const fallbackModel2 = genAI.getGenerativeModel({ model: 'models/gemini-pro' }, { apiVersion: 'v1' });
 
 // Helper to handle Fallback
 async function generateContentWithFallback(prompt: string): Promise<string> {
     try {
-        console.log("🚀 Attempting Model: models/gemini-1.5-flash (v1)");
+        console.log("🚀 Attempting Model 1: gemini-1.5-flash");
         const result = await primaryModel.generateContent(prompt);
         return result.response.text();
     } catch (error: any) {
-        console.warn(`⚠️ Primary Model Failed (${error.message}). Switching to Fallback...`);
-        console.log("🚀 Switching to Model: models/gemini-1.0-pro (v1)");
-        const result = await fallbackModel.generateContent(prompt);
-        return result.response.text();
+        console.warn(`⚠️ Model 1 Failed (${error.message}). Switching to Fallback 1...`);
+        try {
+            console.log("🚀 Attempting Model 2: gemini-1.5-flash-8b");
+            const result = await fallbackModel1.generateContent(prompt);
+            return result.response.text();
+        } catch (error2: any) {
+            console.warn(`⚠️ Model 2 Failed (${error2.message}). Switching to Fallback 2 (Last Resort)...`);
+            console.log("🚀 Attempting Model 3: gemini-pro");
+            const result = await fallbackModel2.generateContent(prompt);
+            return result.response.text();
+        }
     }
 }
 
