@@ -6,6 +6,7 @@ import { QUESTIONS, UI_TEXT, Language } from '@/lib/constants';
 import { analyzeReflection } from './actions';
 import { ScanningOverlay } from '@/components/ScanningOverlay';
 import { DualGauge } from '@/components/DualGauge';
+import { ReportCard } from '@/components/ReportCard';
 import { supabase } from '@/lib/supabase';
 import clsx from 'clsx';
 import { Disc, Languages, Lock, ChevronDown, ChevronUp, Zap, ArrowRight, Award } from 'lucide-react';
@@ -38,6 +39,8 @@ export default function Home() {
   const [isTrainingMode, setIsTrainingMode] = useState(false);
   const [showStandard, setShowStandard] = useState(false);
   const [showPhilosophy, setShowPhilosophy] = useState(false);
+  const [accumulatedScores, setAccumulatedScores] = useState<Array<{ sync: number; identity: number }>>([]);
+  const [showFinalReport, setShowFinalReport] = useState(false);
 
   // Auth States
   const [loading, setLoading] = useState(false);
@@ -52,19 +55,28 @@ export default function Home() {
     window.location.reload();
   };
 
-  // 1. Auth Check on Mount
+  // 1. Auth Check - Redirect to Anonymous by Default
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoadingSession(false);
-    });
+    // We treat everyone as a Guest now to break the auth barrier.
+    (window as any).isGuest = true;
+    setSession({ user: { email: 'anonymous@double-mirror.io' } });
+    setLoadingSession(false);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      // Optional: Keep listener if we want to support login later, 
+      // but for now, we don't block the UI.
+      if (session) setSession(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // 1b. Reset Input on Question Change
+  useEffect(() => {
+    setInputText('');
+    setResult(null);
+  }, [selectedQuestion.id]);
+
 
   // 2. Login Logic
   const handleGoogleLogin = async () => {
@@ -101,7 +113,7 @@ export default function Home() {
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
 
-    if (!session) {
+    if (!session && !((window as any).isGuest)) {
       alert(t('loginRequired'));
       return;
     }
@@ -143,21 +155,26 @@ export default function Home() {
         if (latestRequestId.current !== currentRequestId) return;
 
         setResult(analysisResult);
+        setAccumulatedScores(prev => [...prev, { sync: analysisResult.syncScore, identity: analysisResult.identityScore }]);
 
-        // [Critical Fix] Supabase Save with Full Data
-        const { error: saveError } = await supabase.from('reflections').insert({
-          email: session.user.email,
-          selected_protocol: selectedQuestion.id,
-          user_input: inputText,
-          sync_score: analysisResult.syncScore,
-          identity_score: analysisResult.identityScore,
-          feedback: analysisResult.feedback, // Ensure these columns exist in DB
-          training_tip: analysisResult.trainingTip,
-          mode: mode
-        });
+        if (session && !((window as any).isGuest)) {
+          // Only attempt to save to reflections if we have a real session
+          const { error: saveError } = await supabase.from('reflections').insert({
+            email: session.user.email,
+            selected_protocol: selectedQuestion.id,
+            user_input: inputText,
+            sync_score: analysisResult.syncScore,
+            identity_score: analysisResult.identityScore,
+            feedback: analysisResult.feedback,
+            training_tip: analysisResult.trainingTip,
+            mode: mode
+          });
 
-        if (saveError) {
-          console.error('❌ Supabase Save Error Detail:', JSON.stringify(saveError, null, 2));
+          if (saveError) {
+            console.error('❌ Supabase Save Error Detail:', JSON.stringify(saveError, null, 2));
+          }
+        } else {
+          console.log("💾 [Anonymous Mode] Skipping Supabase reflection save.");
         }
 
         setIsScanning(false);
@@ -201,88 +218,10 @@ export default function Home() {
     return <div className="min-h-screen bg-black text-white flex items-center justify-center font-mono">INITIALIZING MIRROR...</div>;
   }
 
-  if (!session) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center text-white font-sans overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-50"></div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="relative z-10 max-w-md w-full space-y-12"
-        >
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-thin tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
-              DOUBLE MIRROR
-            </h1>
-            <p className="text-sm md:text-base text-gray-400 font-light tracking-widest leading-loose whitespace-pre-line">
-              {t('gatewayTitle')}
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full group relative px-8 py-4 bg-white text-black text-sm font-bold uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                {loading ? t('waiting') : t('loginGoogle')} <ArrowRight size={14} />
-              </span>
-            </button>
-
-            <div className="pt-4 border-t border-white/10">
-              {!emailSent ? (
-                <form onSubmit={handleMagicLinkLogin} className="space-y-3">
-                  <input
-                    type="email"
-                    placeholder="name@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-transparent border border-white/20 text-center text-white text-sm py-3 px-4 focus:outline-none focus:border-white/50 transition-colors placeholder:text-gray-700"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full text-xs text-gray-400 uppercase tracking-widest hover:text-white transition-colors py-2"
-                  >
-                    {loading ? t('waiting') : t('sendMagicLink')}
-                  </button>
-                </form>
-              ) : (
-                <div className="text-center py-4 space-y-2">
-                  <p className="text-cyan-400 text-sm tracking-widest uppercase">{t('checkEmail')}</p>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setShowPhilosophy(true)}
-              className="mt-8 text-[10px] text-gray-600 uppercase tracking-[0.3em] hover:text-gray-400 transition-all border-b border-transparent hover:border-gray-600 pb-1"
-            >
-              {t('philosophyBtn')}
-            </button>
-          </div>
-        </motion.div>
-
-        <AnimatePresence>
-          {showPhilosophy && (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-8"
-            >
-              <div className="max-w-xl w-full text-center space-y-12">
-                <h2 className="text-xs text-cyan-500 uppercase tracking-[0.4em]">{t('philosophyTitle')}</h2>
-                <p className="text-sm md:text-base text-gray-300 font-light leading-loose tracking-wide whitespace-pre-wrap">{t('philosophyBody')}</p>
-                <button onClick={() => setShowPhilosophy(false)} className="text-xs text-white/50 hover:text-white uppercase tracking-widest transition-colors py-4 px-8 border border-white/10 rounded-full">{t('close')}</button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <footer className="absolute bottom-8 text-[10px] text-gray-700 font-mono tracking-widest">DOUBLE MIRROR PROTOCOL v1.2-ULTRA-CONFIRM</footer>
-      </div>
-    );
+  // No more blocking login screen! 🚀
+  if (false && !session) {
+    // This block is now unreachable to bypass login.
+    return null;
   }
 
   return (
@@ -295,8 +234,9 @@ export default function Home() {
         <div className="flex justify-between items-center mb-12 z-10">
           <h1 className={clsx("text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-500", `text-${theme.primary}-500`)}>{t('title')}</h1>
           <div className="flex gap-4 items-center">
-            <span className="text-xs text-gray-600 hidden md:inline-block">{session.user.email}</span>
-            <button onClick={handleSignOut} className="text-xs text-gray-500 hover:text-white transition-colors uppercase tracking-widest">{t('signOut')}</button>
+            {session && session.user.email !== 'anonymous@double-mirror.io' && (
+              <span className="text-xs text-gray-600 hidden md:inline-block">{session.user.email}</span>
+            )}
             <button onClick={toggleLang} className="flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 hover:bg-white/10 transition-colors text-xs font-medium"><Languages size={14} /> {lang === 'ko' ? 'EN' : 'KR'}</button>
           </div>
         </div>
@@ -355,7 +295,14 @@ export default function Home() {
                       : "border-white/5 bg-white/5 text-gray-400 hover:bg-white/10"
                   )}
                 >
-                  <p className="font-medium">{q.text[lang]}</p>
+                  <div className="flex justify-between items-start">
+                    <p className="font-medium pr-8">{q.text[lang]}</p>
+                    {accumulatedScores.some(s => true) && ( // Placeholder for per-question completion check if needed
+                      <div className="text-[10px] text-gray-600">
+                        {/* Optional: Add checkmark if this specific question was answered */}
+                      </div>
+                    )}
+                  </div>
                   {selectedQuestion.id === q.id && (
                     <motion.div layoutId="active-indicator" className={clsx("absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full", mode === 'sync' ? "bg-cyan-500" : "bg-violet-500")} />
                   )}
@@ -409,7 +356,9 @@ export default function Home() {
                   <p className="text-sm text-gray-500 uppercase tracking-widest mb-2">{t('analysisResult')}</p>
                   <h2 className="text-2xl md:text-3xl font-light text-white leading-relaxed">
                     {mode === 'sync' ? (
-                      result.syncScore === 100 ? (
+                      result.syncScore === 0 ? (
+                        <span className="text-gray-500 italic text-lg whitespace-pre-line">{t('zeroSyncAnalysis')}</span>
+                      ) : result.syncScore === 100 ? (
                         <span className="font-bold text-cyan-400">{lang === 'ko' ? "당신은 제미나이입니까?" : "Are you Gemini?"}</span>
                       ) : result.syncScore >= 90 ? (
                         lang === 'ko' ? "고도 동기화: 인간성 증발 직전" : "High Sync: Humanity Evaporating"
@@ -417,7 +366,9 @@ export default function Home() {
                         lang === 'ko' ? "AI 표준 정합성 분석 완료" : "AI Sync Analysis Complete"
                       )
                     ) : (
-                      result.identityScore === 100 ? (
+                      result.identityScore === 0 ? (
+                        <span className="text-gray-500 italic text-lg whitespace-pre-line">{t('zeroIdentityAnalysis')}</span>
+                      ) : result.identityScore === 100 ? (
                         <span className="font-bold text-violet-400">{lang === 'ko' ? "기계가 닿을 수 없는 순수 심연" : "Pure Abyss Unreachable by Machines"}</span>
                       ) : result.identityScore >= 90 ? (
                         lang === 'ko' ? "독보적 자아: 알고리즘 파괴자" : "Unique Self: Algorithm Destroyer"
@@ -426,10 +377,62 @@ export default function Home() {
                       )
                     )}
                   </h2>
+                  <div className={clsx(
+                    "mt-4 px-4 py-2 rounded font-mono text-[10px] tracking-[0.3em] uppercase transition-all duration-500",
+                    accumulatedScores.length >= 3 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "bg-white/5 text-gray-500 border border-white/5"
+                  )}>
+                    Protocol Sequence Analysis Status: {accumulatedScores.length} / 3 {accumulatedScores.length >= 3 ? " [READY]" : ""}
+                  </div>
+                </div>
+
+                {/* NEXT ACTION or FINAL VERDICT */}
+                <div className="pt-4 flex justify-center">
+                  {accumulatedScores.length < 3 ? (
+                    <button
+                      onClick={() => {
+                        const nextIdx = QUESTIONS.findIndex(q => q.id === selectedQuestion.id) + 1;
+                        const nextQ = QUESTIONS[nextIdx % QUESTIONS.length];
+                        setSelectedQuestion(nextQ);
+                        setInputText('');
+                        setResult(null);
+                      }}
+                      className={clsx(
+                        "group flex items-center gap-3 px-8 py-3 rounded-full font-bold tracking-widest transition-all active:scale-95 text-xs",
+                        mode === 'sync' ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "bg-violet-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]"
+                      )}
+                    >
+                      {t('nextStep')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowFinalReport(true)}
+                      className={clsx(
+                        "group flex items-center gap-3 px-10 py-4 rounded-full font-black tracking-[0.2em] transition-all active:scale-95 text-sm uppercase",
+                        mode === 'sync' ? "bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.6)]" : "bg-violet-500 text-white shadow-[0_0_20px_rgba(139,92,246,0.6)]"
+                      )}
+                    >
+                      <Award size={18} /> {t('finalVerdict')}
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* FINAL REPORT MODAL */}
+          {showFinalReport && (
+            <ReportCard
+              mode={mode}
+              lang={lang}
+              scores={accumulatedScores}
+              onClose={() => {
+                setShowFinalReport(false);
+                setAccumulatedScores([]);
+                setResult(null);
+                setInputText('');
+              }}
+            />
+          )}
         </div>
       </section>
     </main>

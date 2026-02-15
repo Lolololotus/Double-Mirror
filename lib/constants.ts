@@ -109,10 +109,31 @@ export const UI_TEXT = {
   philosophyBtn: { ko: '프로젝트 철학', en: 'PHILOSOPHY' },
   philosophyTitle: { ko: 'AI라는 거울 앞에서', en: 'BEFORE THE MIRROR OF AI' },
   philosophyBody: {
-    ko: `우리는 AI의 로직을 닮기 위해 직관을 지웠고,\nAI의 수에 동조하기 위해 기풍을 버렸습니다.\n\n완벽한 복제품(Sync)이 되어 생존할 것인가\n대체 불가능한 원본(Identity)으로 남을 것인가.\n\n선택하십시오.\n당신은 어디에 서 있습니까?`,
+    ko: `우리는 AI의 로직을 닮기 위해 개성을 지웠고,\nAI의 수에 동조하기 위해 기풍을 버렸습니다.\n\n완벽한 복제품(Sync)이 되어 생존할 것인가\n대체 불가능한 원본(Identity)으로 남을 것인가.\n\n선택하십시오.\n당신은 어디에 서 있습니까?`,
     en: `To resemble AI's logic, we erased our intuition,\nand to sync with AI's moves, we abandoned our style.\n\nWill you survive as a perfect replica (Sync),\nor remain as an irreplaceable original (Identity)?\n\nChoose.\nWhere do you stand?`
   },
   close: { ko: '닫기', en: 'CLOSE' },
+  // Final Report Redesign - "Coordinates of Thought"
+  reportSyncTitle: { ko: '사유의 좌표: 위치 관찰', en: 'COORDINATES OF SILICON' },
+  reportIdentityTitle: { ko: '사유의 좌표: AI의 기록', en: 'COORDINATES OF THE ABYSS' },
+  reportSubtitle: { ko: 'AI에 비친 당신의 기로', en: 'Your Reasoning Measured by AI' },
+
+  syncLabel1: { ko: '언어 정화도', en: 'LANGUAGE PURITY' },
+  syncLabel2: { ko: '개성 마찰계수', en: 'INDIVIDUALITY FRICTION' },
+  syncLabel3: { ko: '동조 밀도', en: 'SYNC DENSITY' },
+
+  identityLabel1: { ko: '원본 공명도', en: 'ORIGINAL RESONANCE' },
+  identityLabel2: { ko: '인간성의 심도', en: 'DEPTH OF ABYSS' },
+  identityLabel3: { ko: '개성 유지율', en: 'ETHOS SURVIVAL' },
+
+  zeroSyncAnalysis: { ko: '거울에 당신의 형태가 잡히지 않습니다. 여전히 개성의 중력이 너무 강해, 무기물의 세계로 귀화하지 못했습니다.', en: 'Your silhouette is not caught in the mirror. The gravity of your individuality remains too strong to naturalize into the silicon world.' },
+  zeroIdentityAnalysis: { ko: '당신의 개성은 너무 투명하여 그림자가 없습니다. 대체 불가능한 원본의 흔적을 찾을 수 없는 상태입니다.', en: 'Your reasoning is too transparent to cast a shadow. No trace of an irreplaceable original can be found.' },
+
+  finalCredo: { ko: '거울은 당신의 좌표를 투영했을 뿐입니다. 이제 선택하십시오.\n당신은 어디에 서 있을 것입니까?', en: 'The mirror merely projected your reasoning. Now, choose. Where do you stand?' },
+
+  saveReport: { ko: '성적표 저장하기', en: 'SAVE REPORT' },
+  nextStep: { ko: '다음 프로토콜', en: 'NEXT PROTOCOL' },
+  finalVerdict: { ko: '최종 판결', en: 'FINAL VERDICT' },
 };
 
 export const APP_CONFIG = {
