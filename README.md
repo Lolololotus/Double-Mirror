@@ -52,4 +52,28 @@ $$Similarity = \cos(\theta) = \frac{\vec{u} \cdot \vec{a}}{\|\vec{u}\| \|\vec{a}
 ## 🚀 Getting Started
 1. **Repository Clone**
    ```bash
-   git clone [https://github.com/Lolololotus/Double-Mirror.git](https://github.com/Lolololotus/Double-Mirror.git)
+   git clone https://github.com/Lolololotus/Double-Mirror.git
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+
+## ☁️ Deployment (Vercel)
+
+This project relies on **Google Gemini API**. You must configure the API key in Vercel.
+
+1. **Project Settings**: Go to `Settings` -> `Environment Variables`.
+2. **Add Variable**:
+   - Key: `GEMINI_API_KEY`
+   - Value: `YOUR_GEMINI_API_KEY` (Use a paid key for best performance)
+3. **Redeploy**:
+   - Go to `Deployments`.
+   - Click `...` -> `Redeploy`.
+   - **Do NOT** use build cache to ensure all optimizations (Parallel execution, Retry logic) are applied.
