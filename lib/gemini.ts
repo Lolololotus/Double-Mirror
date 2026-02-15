@@ -9,22 +9,22 @@ console.log("✅ GEMINI_API_KEY Configured:", process.env.GEMINI_API_KEY ? `${pr
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
 
 // [PAID TIER OPTIMIZATION]
-// Primary: gemini-1.5-flash (v1 Update) - High Speed, Low Cost
-// Fallback: gemini-1.5-pro (v1 Update) - High Intelligence, Stability
-const primaryModel = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' }, { apiVersion: 'v1' });
-const fallbackModel = genAI.getGenerativeModel({ model: 'models/gemini-1.5-pro' }, { apiVersion: 'v1' });
+// Primary: gemini-1.5-flash
+// Fallback: gemini-1.5-pro
+const primaryModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
 // Helper to handle Fallback
 async function generateContentWithFallback(prompt: string): Promise<string> {
     try {
-        console.log("🚀 [Primary] Calling gemini-1.5-flash...");
+        console.log("🚀 [Primary] Calling gemini-1.5-flash (v1beta)...");
         const result = await primaryModel.generateContent(prompt);
         return result.response.text();
     } catch (error: any) {
         console.warn(`⚠️ [Primary Failed] ${error.message}. Switching to Fallback (Pro)...`);
 
         // Final Fallback to Pro
-        console.log("🚀 [Fallback] Calling gemini-1.5-pro...");
+        console.log("🚀 [Fallback] Calling gemini-1.5-pro (v1beta)...");
         const result = await fallbackModel.generateContent(prompt);
         return result.response.text();
     }
