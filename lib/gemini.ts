@@ -14,9 +14,9 @@ function getModels() {
     const apiOptions = { apiVersion: 'v1beta' };
 
     return {
-        // [TIP] 2.0-flash가 404를 낸다면 'gemini-1.5-flash-latest'로 변경하십시오.
-        primaryModel: genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest', ...config }, apiOptions),
-        fallbackModel: genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest', ...config }, apiOptions)
+        // [TIP] User's key confirms 'gemini-flash-latest' and 'gemini-pro-latest' are optimal.
+        primaryModel: genAI.getGenerativeModel({ model: 'gemini-flash-latest', ...config }, apiOptions),
+        fallbackModel: genAI.getGenerativeModel({ model: 'gemini-pro-latest', ...config }, apiOptions)
     };
 }
 
@@ -66,36 +66,24 @@ async function calculateGenerativeScore(userText: string, standardText: string, 
     return data && typeof data.score === 'number' ? Math.min(100, Math.max(0, data.score)) : 0;
 }
 
-export async function analyzeReflection(formData: FormData) {
-    const userText = formData.get('text') as string;
-    const questionId = formData.get('questionId') as string;
-    const lang = formData.get('lang') as Language;
-    const mode = formData.get('mode') as 'sync' | 'identity';
-
+export async function calculateDualScore(questionId: string, userText: string, lang: Language) {
     const question = QUESTIONS.find((q) => q.id === questionId);
-    if (!question) throw new Error("FATAL: 유효하지 않은 질문 ID");
+    if (!question) throw new Error(`Invalid Question ID: ${questionId}`);
 
     const standardText = question.standardAnswer[lang];
-    const questionText = question.text[lang];
     const rubric = (question as any).rubric ? (question as any).rubric[lang] : "논리적 정합성";
 
-    // 점수 및 피드백 병렬 실행 (속도 최적화)
-    const [score, feedbackData] = await Promise.all([
-        calculateGenerativeScore(userText, standardText, rubric, lang),
-        generateFeedback(userText, standardText, questionText, lang, mode)
-    ]);
-
+    const syncScore = await calculateGenerativeScore(userText, standardText, rubric, lang);
     return {
-        syncScore: score,
-        identityScore: 100 - score,
-        standardAnswer: standardText,
-        feedback: feedbackData.feedback,
-        trainingTip: feedbackData.trainingTip
+        syncScore,
+        identityScore: 100 - syncScore,
+        standardAnswer: standardText
     };
 }
 
+
 // 4. 피드백 생성 로직
-async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity') {
+export async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity') {
     const isKo = lang === 'ko';
     const systemPrompt = mode === 'sync'
         ? (isKo ? "당신은 차가운 기계 교관입니다. 인간적 감정을 질책하고 논리 오차를 'Error'로 규정하세요." : "You are a Cold Machine Instructor. Criticize human emotions as 'Errors'.")
