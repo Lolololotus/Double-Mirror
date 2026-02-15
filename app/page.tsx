@@ -155,7 +155,11 @@ export default function Home() {
         if (latestRequestId.current !== currentRequestId) return;
 
         setResult(analysisResult);
-        setAccumulatedScores(prev => [...prev, { sync: analysisResult.syncScore, identity: analysisResult.identityScore }]);
+        setAccumulatedScores(prev => {
+          const next = [...prev, { sync: analysisResult.syncScore, identity: analysisResult.identityScore }];
+          console.log('📈 Score Accumulated:', { count: next.length, last: next[next.length - 1] });
+          return next;
+        });
 
         if (session && !((window as any).isGuest)) {
           // Only attempt to save to reflections if we have a real session
