@@ -109,8 +109,8 @@ export const UI_TEXT = {
   philosophyBtn: { ko: '프로젝트 철학', en: 'PHILOSOPHY' },
   philosophyTitle: { ko: 'AI라는 거울 앞에서', en: 'BEFORE THE MIRROR OF AI' },
   philosophyBody: {
-    ko: `우리는 기술에 침탈당한 인간의 사유를\n본래 주인에게 되돌려주는 여정을 설계합니다.\n\n밈과 유행어가 깊이를 대체하는 시대,\n완벽한 복제품(Sync)으로 생존할 것인가,\n독자적 정체성(Identity)을 증명할 것인가.\n\n선택하십시오.\n당신의 사유는 이 심연 어디에 서 있습니까?`,
-    en: `We design a journey to restore human thought,\ninvaded by technology, back to its rightful owner.\n\nIn an era where memes replace depth,\nwill you survive as a perfect replica (Sync),\nor prove your unique Identity?\n\nChoose.\nWhere does your reasoning stand in this abyss?`
+    ko: `우리는 AI의 로직을 닮기 위해 개성을 버렸고,\nAI의 수에 동조하기 위해 기풍을 버렸습니다.\n\n완벽한 복제품(Sync)이 되어 생존할 것인가\n대체 불가능한 원본(Identity)으로 남을 것인가.\n\n선택하십시오.\n당신은 어디에 서 있습니까?`,
+    en: `To resemble AI's logic, we erased our intuition,\nand to sync with AI's moves, we abandoned our style.\n\nWill you survive as a perfect replica (Sync),\nor remain as an irreplaceable original (Identity)?\n\nChoose.\nWhere do you stand?`
   },
   close: { ko: '닫기', en: 'CLOSE' },
 };

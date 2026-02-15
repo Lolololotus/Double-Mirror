@@ -280,7 +280,7 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-        <footer className="absolute bottom-8 text-[10px] text-gray-700 font-mono">DOUBLE MIRROR PROTOCOL v1.1-DEBUG</footer>
+        <footer className="absolute bottom-8 text-[10px] text-gray-700 font-mono tracking-widest">DOUBLE MIRROR PROTOCOL v1.2-ULTRA-CONFIRM</footer>
       </div>
     );
   }
