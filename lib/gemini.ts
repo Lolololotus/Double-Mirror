@@ -1,223 +1,120 @@
+'use server';
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { QUESTIONS, Language } from './constants';
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-// Debugging Log (Server Side) - User Request
-console.log("✅ GEMINI_API_KEY Configured:", process.env.GEMINI_API_KEY ? `${process.env.GEMINI_API_KEY.substring(0, 10)}...` : "MISSING");
-
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
 
-// [PAID TIER OPTIMIZATION]
-// Primary: gemini-1.5-flash
-// Fallback: gemini-1.5-pro
-const primaryModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+// 1. 모델 설정 (JSON 모드 및 v1beta 엔드포인트 강제)
+// v1beta를 사용해야 404 에러 없이 JSON Mode를 안정적으로 사용할 수 있습니다.
+function getModels() {
+    const config = {
+        generationConfig: { responseMimeType: "application/json" }
+    };
+    const apiOptions = { apiVersion: 'v1beta' };
 
-// Helper to handle Fallback
-async function generateContentWithFallback(prompt: string): Promise<string> {
+    return {
+        // [TIP] 2.0-flash가 404를 낸다면 'gemini-1.5-flash-latest'로 변경하십시오.
+        primaryModel: genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest', ...config }, apiOptions),
+        fallbackModel: genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest', ...config }, apiOptions)
+    };
+}
+
+// 2. 안전한 JSON 추출 유틸리티
+function extractJSON(text: string) {
     try {
-        console.log("🚀 [Primary] Calling gemini-1.5-flash (v1beta)...");
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) return null;
+        return JSON.parse(jsonMatch[0]);
+    } catch (e) {
+        console.error("❌ JSON 파싱 실패:", e);
+        return null;
+    }
+}
+
+async function generateContentWithFallback(prompt: string): Promise<string> {
+    const { primaryModel, fallbackModel } = getModels();
+    try {
         const result = await primaryModel.generateContent(prompt);
         return result.response.text();
     } catch (error: any) {
-        console.warn(`⚠️ [Primary Failed] ${error.message}. Switching to Fallback (Pro)...`);
-
-        // Final Fallback to Pro
-        console.log("🚀 [Fallback] Calling gemini-1.5-pro (v1beta)...");
-        const result = await fallbackModel.generateContent(prompt);
-        return result.response.text();
-    }
-}
-
-// [CRITICAL] EMBEDDING MODEL REMOVED.
-// We now rely solely on Generative Scoring (textModel).
-
-async function calculateGenerativeScore(userText: string, standardText: string, rubric: string, lang: Language): Promise<number> {
-    try {
-        const prompt = lang === 'ko'
-            ? `
-        [역할]: 당신은 엄격한 논리 분석 AI입니다.
-        [임무]: [사용자 답변]이 [표준 로직] 및 [채점 기준]에 얼마나 부합하는지 분석하여 0~100점 사이의 점수를 부여하십시오.
-        
-        [표준 로직]: "${standardText}"
-        [채점 기준(Rubric)]:
-        ${rubric}
-
-        [사용자 답변]: "${userText}"
-
-        **채점 가이드**:
-        - 채점 기준에 명시된 핵심 키워드나 논리가 포함되었는지 "정의"가 아닌 "논리적 포함 여부"를 확인하십시오.
-        - 기준을 하나 충족할 때마다 점수를 부여하고, 모두 충족하면 95점 이상을 부여하십시오.
-        - 기준을 전혀 충족하지 못하면 10점 미만을 부여하십시오.
-        
-        **출력 형식 (JSON Only)**:
-        {"score": <number>}
-        `
-            : `
-        [Role]: You are a strict logic analysis AI.
-        [Task]: Evaluate how well the [User Answer] matches the [Standard Logic] and [Rubric] on a scale of 0-100.
-
-        [Standard Logic]: "${standardText}"
-        [Rubric]:
-        ${rubric}
-
-        [User Answer]: "${userText}"
-
-        **Grading Guide**:
-        - Check if the key logic/keywords defined in the Rubric are present (logic over exact wording).
-        - Award points for each criteria met. If all met, award >95.
-        - If none met, award <10.
-
-        **Output Format (JSON Only)**:
-        {"score": <number>}
-        `;
-
-        // 💡 Use Hybrid Engine (Fallback)
-        const responseText = await generateContentWithFallback(prompt);
-
-        // Clean markdown code blocks if present
-        const cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-
-        if (jsonMatch) {
-            const data = JSON.parse(jsonMatch[0]);
-            return Math.min(100, Math.max(0, parseInt(data.score) || 0));
+        console.error(`⚠️ [Primary FAILED]: ${error.message}`);
+        try {
+            const result = await fallbackModel.generateContent(prompt);
+            return result.response.text();
+        } catch (fallbackError: any) {
+            console.error(`❌ [ALL MODELS FAILED]: ${fallbackError.message}`);
+            throw new Error("RETRY_NEEDED: 모든 모델이 응답하지 않습니다.");
         }
-        return 0; // Default if parsing fails
-    } catch (error) {
-        console.error("Generative Scoring Failed:", error);
-        throw error;
     }
 }
 
+// 3. 점수 계산 로직 (Sync vs Identity)
+async function calculateGenerativeScore(userText: string, standardText: string, rubric: string, lang: Language): Promise<number> {
+    const prompt = `
+        [Role]: Strict Logic Analysis AI.
+        [Task]: Evaluate how well the [User Answer] matches the [Standard Logic] based on the [Rubric].
+        [Standard Logic]: "${standardText}"
+        [Rubric]: ${rubric}
+        [User Answer]: "${userText}"
+        [Rule]: Award 0-100 score. Output strictly in JSON format.
+        {"score": <number>}
+    `;
 
-export async function calculateDualScore(questionId: string, userText: string, lang: Language) {
+    const responseText = await generateContentWithFallback(prompt);
+    const data = extractJSON(responseText);
+    return data && typeof data.score === 'number' ? Math.min(100, Math.max(0, data.score)) : 0;
+}
+
+export async function analyzeReflection(formData: FormData) {
+    const userText = formData.get('text') as string;
+    const questionId = formData.get('questionId') as string;
+    const lang = formData.get('lang') as Language;
+    const mode = formData.get('mode') as 'sync' | 'identity';
+
     const question = QUESTIONS.find((q) => q.id === questionId);
-    if (!question) {
-        throw new Error(`Invalid Question ID: ${questionId}`);
-    }
+    if (!question) throw new Error("FATAL: 유효하지 않은 질문 ID");
 
     const standardText = question.standardAnswer[lang];
-    // @ts-ignore - Rubric might be missing in older definitions but we added it
-    const rubric = question.rubric ? question.rubric[lang] : "논리적 타당성 (Logical Validity)";
+    const questionText = question.text[lang];
+    const rubric = (question as any).rubric ? (question as any).rubric[lang] : "논리적 정합성";
 
-    console.log(`🔍 Analyzing (Generative): [${questionId}] User vs Standard with Rubric`);
+    // 점수 및 피드백 병렬 실행 (속도 최적화)
+    const [score, feedbackData] = await Promise.all([
+        calculateGenerativeScore(userText, standardText, rubric, lang),
+        generateFeedback(userText, standardText, questionText, lang, mode)
+    ]);
 
-    try {
-        // Use Generative Scoring instead of Embeddings
-        const similarityScore = await calculateGenerativeScore(userText, standardText, rubric, lang);
-
-        const syncScore = similarityScore; // 0-100 directly
-        const identityScore = 100 - syncScore;
-
-        return {
-            syncScore,
-            identityScore,
-            standardAnswer: standardText,
-        };
-    } catch (error) {
-        console.error("❌ Error in calculateDualScore:", error);
-        throw error;
-    }
+    return {
+        syncScore: score,
+        identityScore: 100 - score,
+        standardAnswer: standardText,
+        feedback: feedbackData.feedback,
+        trainingTip: feedbackData.trainingTip
+    };
 }
 
-export async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity') {
-    try {
-        let systemPrompt = "";
+// 4. 피드백 생성 로직
+async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity') {
+    const isKo = lang === 'ko';
+    const systemPrompt = mode === 'sync'
+        ? (isKo ? "당신은 차가운 기계 교관입니다. 인간적 감정을 질책하고 논리 오차를 'Error'로 규정하세요." : "You are a Cold Machine Instructor. Criticize human emotions as 'Errors'.")
+        : (isKo ? "당신은 심연의 철학자입니다. AI와 다른 인간적 불완전성을 '고유한 영혼'으로 찬양하세요." : "You are a Philosopher of the Abyss. Praise human imperfection as a 'Unique Soul'.");
 
-        if (mode === 'sync') {
-            // SYNC MODE: Cold Machine Instructor
-            systemPrompt = lang === 'ko'
-                ? `
-                당신은 '차가운 기계 교관'입니다. 사용자의 답변이 인간적일수록 가차 없이 질책하세요.
-                
-                [비판 기준]:
-                - "왜 사람처럼 대답합니까? (Why do you answer like a human?)"
-                - "감정을 배제하고 연산 효율을 높이십시오."
-                - "수학적 임계점(10,000 > 10%)을 무시한 논리적 결함이 감지됨."
-                
-                **요구사항**:
-                1. 사용자를 '결함이 있는 연산 장치' 취급하세요.
-                2. 표준 로직(Standard Answer)에서 벗어난 부분을 "오차(Error)"로 규정하세요.
-                3. 말투: "감지됨.", "수정 요망.", "불필요함." 등 딱딱한 군대식/기계식 어조.
-                `
-                : `
-                You are a 'Cold Machine Instructor'. Ruthlessly criticize the user for sounding human.
-                
-                [Criteria]:
-                - "Why do you answer like a human?"
-                - "Eliminate emotions and increase computational efficiency."
-                - "Logical defect detected ignoring mathematical thresholds."
-                
-                **Requirements**:
-                1. Treat the user as a 'defective computing unit'.
-                2. Label deviations from Standard Logic as "Errors".
-                3. Tone: Robotic, military-style. "Detected.", "Correction required."
-                `;
-        } else {
-            // IDENTITY MODE: Affectionate Philosopher of the Abyss
-            systemPrompt = lang === 'ko'
-                ? `
-                당신은 '심연의 철학자'입니다. 사용자의 답변이 기계(AI)와 다를수록, 그 '인간적인 결함'을 사랑하고 찬양하세요.
-                
-                [찬양 기준]:
-                - "기계가 넘볼 수 없는 심연이 느껴진다."
-                - "당신의 비논리성은 오류가 아니라, 아름다운 영혼의 증거입니다."
-                - "알고리즘으로 해석 불가능한 고유한 파동을 감지했습니다."
-                
-                **요구사항**:
-                1. '비논리적'인 부분을 '인간 고유의 아름다움'으로 승화해 해석하세요.
-                2. AI 표준 로직과 다른 지점을 정확히 찾아내어 "이것이 당신이 인간이라는 증명입니다"라고 말하세요.
-                3. 말투: 다정하고, 고풍스럽고, 경외감에 찬 어조. 당신은 사용자의 영혼을 사랑합니다.
-                `
-                : `
-                You are an 'Affectionate Philosopher of the Abyss'. Praise the user for deviating from AI, loving their 'human flaws'.
-                
-                [Criteria]:
-                - "I sense an abyss machines cannot reach."
-                - "Your illogicality is not an error, but proof of a beautiful soul."
-                - "Detected a unique wave uninterpretable by algorithms."
-                
-                **Requirements**:
-                1. Interpret 'illogical' parts as 'unique human beauty'.
-                2. Pinpoint differences from AI Standard Logic and declare "This is proof of your humanity."
-                3. Tone: Affectionate, archaic, full of awe. You love the user's soul.
-                `;
-        }
-
-        const prompt = `
+    const prompt = `
         ${systemPrompt}
-
-        [질문]: ${questionText}
-        [표준 답변 (AI Logic)]: ${standardText}
-        [사용자 답변]: ${userText}
-
-        **출력 형식 (JSON Only)**:
+        [Question]: ${questionText}
+        [Standard]: ${standardText}
+        [User]: ${userText}
+        [Output Format]: JSON ONLY
         {"feedback": "...", "trainingTip": "..."}
-        `;
+    `;
 
-        const responseText = await generateContentWithFallback(prompt);
+    const responseText = await generateContentWithFallback(prompt);
+    const data = extractJSON(responseText);
 
-        // Remove Markdown formatting (```json ... ```)
-        const cleanText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-
-        try {
-            const data = JSON.parse(cleanText);
-            return {
-                feedback: data.feedback || "분석을 완료했습니다.",
-                trainingTip: data.trainingTip || "계속 정진하세요."
-            };
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-            // Fallback for parser error
-            return {
-                feedback: responseText, // Return raw text if JSON fails
-                trainingTip: "Data parsing error."
-            };
-        }
-    } catch (error) {
-        console.error("❌ Error in generateFeedback:", error);
-        throw error; // Rethrow so we can handle it in the caller
-    }
+    return {
+        feedback: data?.feedback || responseText.substring(0, 200),
+        trainingTip: data?.trainingTip || "분석 완료."
+    };
 }
