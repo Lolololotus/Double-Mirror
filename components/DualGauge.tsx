@@ -59,12 +59,14 @@ function GaugeCircle({ score, color, label }: { score: number; color: string; la
 export function DualGauge({ syncScore, identityScore }: DualGaugeProps) {
     return (
         <div className="flex flex-row justify-center items-center gap-12">
-            <GaugeCircle score={syncScore} color="#a1a1aa" label="SYNC (SILVER)" />
-            <GaugeCircle score={identityScore} color="#000000" label="IDENTITY (OBSIDIAN)" /> {/* Obsidian is black but using dark gray for visibility on dark bg? Let's use a deep purple or just white for contrast if 'Obsidian' implies black/darkness. Spec said Silver/Obsidian. Let's make Obsidian dark grey/black but maybe with a white glow or border concepts? Actually, let's use a very dark color but readable. Maybe a deep violet or just plain white/gray contrast. Let's try to stick to theme. Obsidian -> Black. Screen is dark. Black on Dark is invisible. Let's make it a glossy black/gray. */}
-            {/* Re-thinking color for Obsidian on Dark Mode: Maybe a dark purple or just 'white' text but the ring is dark gray? Let's use Slate-900 for ring and White for text. Or maybe Cyan vs Purple? 
-      User said: "좌우(Silver/Obsidian)에 각각 대칭적으로 표시". 
-      Let's use Silver (#C0C0C0) and Obsidian-ish (#4A4A4A or similar dark glossy). 
-      For visibility, I will use a lighter gray for Obsidian label or make it look 'shiny black' via effects if possible, but for simple SVG color, let's use a dark slate. */}
+            <div className="flex flex-col items-center">
+                <span className="text-[10px] text-gray-500 font-light tracking-widest mb-2 uppercase">AI 동조율 (AI Sync)</span>
+                <GaugeCircle score={syncScore} color="#a1a1aa" label="SYNC (SILVER)" />
+            </div>
+            <div className="flex flex-col items-center">
+                <span className="text-[10px] text-gray-500 font-light tracking-widest mb-2 uppercase">인간적 정체성 (Human Identity)</span>
+                <GaugeCircle score={identityScore} color="#4b5563" label="IDENTITY (OBSIDIAN)" />
+            </div>
         </div>
     );
 }

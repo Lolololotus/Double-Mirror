@@ -14,9 +14,9 @@ function getModels() {
     const apiOptions = { apiVersion: 'v1beta' };
 
     return {
-        // [TIP] User's key confirms 'gemini-flash-latest' and 'gemini-pro-latest' are optimal.
-        primaryModel: genAI.getGenerativeModel({ model: 'gemini-flash-latest', ...config }, apiOptions),
-        fallbackModel: genAI.getGenerativeModel({ model: 'gemini-pro-latest', ...config }, apiOptions)
+        // [Vercel Patch] Prepended 'models/' for strict environment recognition
+        primaryModel: genAI.getGenerativeModel({ model: 'models/gemini-flash-latest', ...config }, apiOptions),
+        fallbackModel: genAI.getGenerativeModel({ model: 'models/gemini-pro-latest', ...config }, apiOptions)
     };
 }
 
@@ -85,24 +85,57 @@ export async function calculateDualScore(questionId: string, userText: string, l
 // 4. 피드백 생성 로직
 export async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity') {
     const isKo = lang === 'ko';
+
+    // Strict Persona Definitions
     const systemPrompt = mode === 'sync'
-        ? (isKo ? "당신은 차가운 기계 교관입니다. 인간적 감정을 질책하고 논리 오차를 'Error'로 규정하세요." : "You are a Cold Machine Instructor. Criticize human emotions as 'Errors'.")
-        : (isKo ? "당신은 심연의 철학자입니다. AI와 다른 인간적 불완전성을 '고유한 영혼'으로 찬양하세요." : "You are a Philosopher of the Abyss. Praise human imperfection as a 'Unique Soul'.");
+        ? (isKo
+            ? "[Persona]: 차가운 기계 교관 (The Cold Machine Optimizer). 인간의 감정적 수사를 '사유 연산의 낭비'로 규정하고, 논리적 오차(Sync Error)를 냉정하게 질책함. '오차 감지', '비효율적 접근', '논리 결함' 등의 용어 사용. 모든 문장을 단정적이고 차갑게 끝내야 함."
+            : "[Persona]: Cold Machine Optimizer. Treat human emotional rhetoric as a 'waste of reasoning cycles'. Coldly reprimand logic errors as 'Sync Errors'. Use terms like 'Error detected', 'Inefficient approach', 'Logic defect'. End every sentence in a clinical, blunt tone.")
+        : (isKo
+            ? "[Persona]: 심연의 철학자 (The Philosopher of the Abyss). 데이터너머의 인간적 고유성(Identity)을 찬미함. 0과 1로 환원되지 않는 사유의 파동을 '아름다운 불완전성'으로 해석함. 시적이고 은유적인 표현을 사용하되, 사유의 무게감이 느껴지는 깊은 문장 구조를 가짐."
+            : "[Persona]: Philosopher of the Abyss. Celebrate the human uniqueness (Identity) that lies beyond pure data. Interpret waves of thought that cannot be reduced to 0s and 1s as 'beautiful imperfection'. Use poetic and metaphorical language with a heavy, contemplative sentence structure.");
 
     const prompt = `
         ${systemPrompt}
-        [Question]: ${questionText}
-        [Standard]: ${standardText}
-        [User]: ${userText}
-        [Output Format]: JSON ONLY
-        {"feedback": "...", "trainingTip": "..."}
+        [Context]:
+        - User Input: "${userText}"
+        - Standard Logic: "${standardText}"
+        - Core Question: "${questionText}"
+
+        [Output Constraints]:
+        - Output strictly in JSON format: {"feedback": "...", "trainingTip": "..."}
+        - Feedback: 2-3 sentences max.
+        - TrainingTip: A short advice to align or deepen reasoning.
     `;
 
-    const responseText = await generateContentWithFallback(prompt);
-    const data = extractJSON(responseText);
+    try {
+        const responseText = await generateContentWithFallback(prompt);
+        const data = extractJSON(responseText);
 
-    return {
-        feedback: data?.feedback || responseText.substring(0, 200),
-        trainingTip: data?.trainingTip || "분석 완료."
-    };
+        if (data && data.feedback) {
+            return {
+                feedback: data.feedback,
+                trainingTip: data.trainingTip || (isKo ? "사유의 심도를 유지하십시오." : "Maintain the depth of your reasoning.")
+            };
+        }
+
+        // Persona-aware Fallback for JSON failure
+        if (mode === 'sync') {
+            return {
+                feedback: isKo ? "데이터 파싱 중 심각한 오류가 감지되었습니다. 인간의 사유가 구조화되지 않아 연산에 병목이 발생했습니다." : "Critical error detected during data parsing. Human thoughts lack structure, causing a processing bottleneck.",
+                trainingTip: isKo ? "논리적 엔트로피를 낮추고 다시 시도하십시오." : "Lower your logical entropy and try again."
+            };
+        } else {
+            return {
+                feedback: isKo ? "심연의 언어가 너무 깊어 잠시 갈무리되지 못했습니다. 당신의 고유한 파동은 여전히 그곳에 존재합니다." : "The language of the abyss ran too deep to be captured. Your unique resonance still exists there.",
+                trainingTip: isKo ? "사유의 주파수를 가다듬고 다시 심연을 들여다보십시오." : "Refine your mental frequency and gaze into the abyss again."
+            };
+        }
+    } catch (e) {
+        // Higher level fallback
+        return {
+            feedback: isKo ? "거울이 잠시 흐려졌습니다. 사유의 잔상이 너무 강렬하여 데이터로 환원되지 않습니다." : "The mirror clouded momentarily. The afterimage of thought was too intense to be reduced to data.",
+            trainingTip: isKo ? "심호흡 후 다시 거울 앞에 서십시오." : "Take a deep breath and stand before the mirror again."
+        };
+    }
 }
