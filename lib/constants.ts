@@ -74,8 +74,8 @@ export const UI_TEXT = {
   waiting: { ko: '시스템 신호 대기 중', en: 'AWAITING SIGNAL...' },
   standardReflection: { ko: 'AI 표준 로직', en: 'AI STANDARD LOGIC' },
   analysisResult: { ko: '분석 데이터', en: 'ANALYSIS DATA' },
-  syncMode: { ko: '동기화 모드', en: 'SYNC MODE' },
-  identityMode: { ko: '사유 심화 (deep-reso)', en: 'DEEP-RESO' },
+  syncMode: { ko: '기계 지능 동조 (AI Sync)', en: 'AI SYNC' },
+  identityMode: { ko: '인간 사유 심화 (Human Deep-Reso)', en: 'HUMAN DEEP-RESO' },
   // Deep-Reso Anchor
   anchorText: { ko: 'Coming Soon, \n deep-reso: 사유의 깊이를 인양 중입니다.', en: 'Coming Soon, \n deep-reso: Salvaging the depth of thought.' },
   // Gateway

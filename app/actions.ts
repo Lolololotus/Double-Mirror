@@ -47,15 +47,15 @@ export async function analyzeReflection(formData: FormData) {
         let trainingTip = "";
         const standardAnswer = currentQuestion.standardAnswer[lang];
 
-        // 1. Parallel Execution (Optimization)
-        // Run both AI tasks efficiently to stay under Vercel's 10s Limit
-        const [scoreResult, feedbackResult] = await Promise.all([
-            calculateDualScore(questionId, text, lang),
-            generateFeedback(text, standardAnswer, currentQuestion.text[lang], lang, mode)
-        ]);
-
+        // 1. Calculate Score first to inform the feedback persona
+        const scoreResult = await calculateDualScore(questionId, text, lang);
         syncScore = scoreResult.syncScore;
         identityScore = scoreResult.identityScore;
+
+        // 2. Generate persona-aware feedback based on the score
+        const relevantScore = mode === 'sync' ? syncScore : identityScore;
+        const feedbackResult = await generateFeedback(text, standardAnswer, currentQuestion.text[lang], lang, mode, relevantScore);
+
         feedback = feedbackResult.feedback;
         trainingTip = feedbackResult.trainingTip;
 

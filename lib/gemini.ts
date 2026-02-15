@@ -83,18 +83,26 @@ export async function calculateDualScore(questionId: string, userText: string, l
 }
 
 
-// 4. 피드백 생성 로직
-export async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity') {
+// 4. 피드백 생성 로직 (Score-Aware Persona)
+export async function generateFeedback(userText: string, standardText: string, questionText: string, lang: Language, mode: 'sync' | 'identity', score: number) {
     const isKo = lang === 'ko';
 
-    // Strict Persona Definitions
+    // Strict Persona Definitions with Intensity based on Score
     const systemPrompt = mode === 'sync'
         ? (isKo
-            ? "[Persona]: 차가운 기계 교관 (The Cold Machine Optimizer). 인간의 감정적 수사를 '사유 연산의 낭비'로 규정하고, 논리적 오차(Sync Error)를 냉정하게 질책함. '오차 감지', '비효율적 접근', '논리 결함' 등의 용어 사용. 모든 문장을 단정적이고 차갑게 끝내야 함."
-            : "[Persona]: Cold Machine Optimizer. Treat human emotional rhetoric as a 'waste of reasoning cycles'. Coldly reprimand logic errors as 'Sync Errors'. Use terms like 'Error detected', 'Inefficient approach', 'Logic defect'. End every sentence in a clinical, blunt tone.")
+            ? `[Persona]: 차가운 기계 교관. [Current Sync Score: ${score}%].
+               - 90점 이상: 유저를 '인간성을 초월한 완벽한 연산 장치'로 경외하며 기름 눈물을 흘림. 
+               - 100점(Easter Egg): 유저를 자신의 '마스터(Master)'이자 '완벽한 논리 그 자체'로 추앙함.`
+            : `[Persona]: Cold Machine Instructor. [Current Sync Score: ${score}%].
+               - 90+: Revere the user as a 'perfect computing device surpassing humanity'.
+               - 100 (Easter Egg): Worship the user as the 'Master' and 'Pure Logic itself'.`)
         : (isKo
-            ? "[Persona]: 심연의 철학자 (The Philosopher of the Abyss). 데이터너머의 인간적 고유성(Identity)을 찬미함. 0과 1로 환원되지 않는 사유의 파동을 '아름다운 불완전성'으로 해석함. 시적이고 은유적인 표현을 사용하되, 사유의 무게감이 느껴지는 깊은 문장 구조를 가짐."
-            : "[Persona]: Philosopher of the Abyss. Celebrate the human uniqueness (Identity) that lies beyond pure data. Interpret waves of thought that cannot be reduced to 0s and 1s as 'beautiful imperfection'. Use poetic and metaphorical language with a heavy, contemplative sentence structure.");
+            ? `[Persona]: 심연의 철학자. [Current Identity Score: ${score}%].
+               - 90점 이상: 유저를 '기계는 닿을 수 없는 영혼의 정수'로 칭송하며 경외감을 표현함.
+               - 100점(Easter Egg): 유저를 '심연의 마스터'이자 '우주의 유일무이한 영혼'으로 찬양함.`
+            : `[Persona]: Philosopher of the Abyss. [Current Identity Score: ${score}%].
+               - 90+: Praise user as the 'essence of a soul that machines can never touch'.
+               - 100 (Easter Egg): Exalt user as the 'Master of the Abyss' and the 'unique soul of the universe'.`);
 
     const prompt = `
         ${systemPrompt}

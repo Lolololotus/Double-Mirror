@@ -325,16 +325,40 @@ export default function Home() {
           </AnimatePresence>
 
           <div className="flex gap-4 mb-8">
-            <button onClick={() => { setMode('sync'); setIsTrainingMode(false); }} className={clsx("flex-1 py-3 text-sm tracking-widest uppercase border-b-2 transition-all", mode === 'sync' ? "border-cyan-500 text-cyan-500" : "border-transparent text-gray-600")}>{t('syncMode')}</button>
-            <button onClick={() => { setMode('identity'); setIsTrainingMode(false); }} className={clsx("flex-1 py-3 text-sm tracking-widest uppercase border-b-2 transition-all", mode === 'identity' ? "border-violet-500 text-violet-500" : "border-transparent text-gray-600")}>{t('identityMode')}</button>
+            <button
+              onClick={() => { setMode('sync'); setIsTrainingMode(false); }}
+              title="AI처럼 생각하기 (Think like an AI)"
+              className={clsx("flex-1 py-3 text-sm tracking-widest uppercase border-b-2 transition-all", mode === 'sync' ? "border-cyan-500 text-cyan-500" : "border-transparent text-gray-600 hover:text-gray-400")}
+            >
+              {t('syncMode')}
+            </button>
+            <button
+              onClick={() => { setMode('identity'); setIsTrainingMode(false); }}
+              title="인간답게 사유하기 (Think like a Human)"
+              className={clsx("flex-1 py-3 text-sm tracking-widest uppercase border-b-2 transition-all", mode === 'identity' ? "border-violet-500 text-violet-500" : "border-transparent text-gray-600 hover:text-gray-400")}
+            >
+              {t('identityMode')}
+            </button>
           </div>
 
           <div className="space-y-6 mb-10">
             <label className="text-xs text-gray-500 uppercase tracking-wider">{t('selectTopic')}</label>
             <div className="grid gap-4">
               {QUESTIONS.map((q) => (
-                <button key={q.id} onClick={() => { setSelectedQuestion(q); setResult(null); }} className={clsx("text-left p-4 rounded-xl border transition-all", selectedQuestion.id === q.id ? `${theme.border} ${theme.bgAccent} text-white` : "border-white/5 bg-white/5 text-gray-400 hover:bg-white/10")}>
+                <button
+                  key={q.id}
+                  onClick={() => { setSelectedQuestion(q); setResult(null); }}
+                  className={clsx(
+                    "relative text-left p-4 rounded-xl border transition-all duration-300",
+                    selectedQuestion.id === q.id
+                      ? `${mode === 'sync' ? 'border-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.3)] bg-cyan-950/40 border-[3px]' : 'border-violet-500/80 shadow-[0_0_15px_rgba(139,92,246,0.3)] bg-violet-950/40 border-[3px]'} text-white`
+                      : "border-white/5 bg-white/5 text-gray-400 hover:bg-white/10"
+                  )}
+                >
                   <p className="font-medium">{q.text[lang]}</p>
+                  {selectedQuestion.id === q.id && (
+                    <motion.div layoutId="active-indicator" className={clsx("absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full", mode === 'sync' ? "bg-cyan-500" : "bg-violet-500")} />
+                  )}
                 </button>
               ))}
             </div>
@@ -383,7 +407,25 @@ export default function Home() {
                 )}
                 <div className="pt-8 border-t border-white/5">
                   <p className="text-sm text-gray-500 uppercase tracking-widest mb-2">{t('analysisResult')}</p>
-                  <h2 className="text-3xl font-light text-white">{result.syncScore > 80 ? (lang === 'ko' ? "고도 동기화 상태" : "HIGHLY SYNCHRONIZED") : (lang === 'ko' ? "독자적 정체성 확보" : "DISTINCT IDENTITY")}</h2>
+                  <h2 className="text-2xl md:text-3xl font-light text-white leading-relaxed">
+                    {mode === 'sync' ? (
+                      result.syncScore === 100 ? (
+                        <span className="font-bold text-cyan-400">{lang === 'ko' ? "당신은 제미나이입니까?" : "Are you Gemini?"}</span>
+                      ) : result.syncScore >= 90 ? (
+                        lang === 'ko' ? "고도 동기화: 인간성 증발 직전" : "High Sync: Humanity Evaporating"
+                      ) : (
+                        lang === 'ko' ? "AI 표준 정합성 분석 완료" : "AI Sync Analysis Complete"
+                      )
+                    ) : (
+                      result.identityScore === 100 ? (
+                        <span className="font-bold text-violet-400">{lang === 'ko' ? "기계가 닿을 수 없는 순수 심연" : "Pure Abyss Unreachable by Machines"}</span>
+                      ) : result.identityScore >= 90 ? (
+                        lang === 'ko' ? "독보적 자아: 알고리즘 파괴자" : "Unique Self: Algorithm Destroyer"
+                      ) : (
+                        lang === 'ko' ? "인간적 고유성 분석 완료" : "Human Identity Analysis Complete"
+                      )
+                    )}
+                  </h2>
                 </div>
               </motion.div>
             )}
