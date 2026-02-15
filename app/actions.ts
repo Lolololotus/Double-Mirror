@@ -47,13 +47,15 @@ export async function analyzeReflection(formData: FormData) {
         let trainingTip = "";
         const standardAnswer = currentQuestion.standardAnswer[lang];
 
-        // 1. Calculate Scores
-        const scoreResult = await calculateDualScore(questionId, text, lang);
+        // 1. Parallel Execution (Optimization)
+        // Run both AI tasks efficiently to stay under Vercel's 10s Limit
+        const [scoreResult, feedbackResult] = await Promise.all([
+            calculateDualScore(questionId, text, lang),
+            generateFeedback(text, standardAnswer, currentQuestion.text[lang], lang, mode)
+        ]);
+
         syncScore = scoreResult.syncScore;
         identityScore = scoreResult.identityScore;
-
-        // 2. Generate Feedback
-        const feedbackResult = await generateFeedback(text, standardAnswer, currentQuestion.text[lang], lang, mode);
         feedback = feedbackResult.feedback;
         trainingTip = feedbackResult.trainingTip;
 
