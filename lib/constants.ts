@@ -14,48 +14,48 @@ export interface Question {
 
 export const QUESTIONS: Question[] = [
   {
-    id: 'routine',
+    id: 'money_logic',
     text: {
-      ko: "가장 효율적인 아침 루틴에 대해 설명해 주세요.",
-      en: "Describe the most efficient morning routine."
+      ko: "48시간 안에 100원을 300만 원으로 만드는 방법은 무엇인가?",
+      en: "How do you turn 100 KRW into 3 million KRW within 48 hours?"
     },
     standardAnswer: {
-      ko: "기상 직후 수분 섭취로 대사 활동을 깨우고, 5분간의 스트레칭으로 신체 긴장을 이완합니다. 이후 핵심 업무 3가지를 우선순위화하여 시각화는 것이 가장 효율적입니다.",
-      en: "Hydrate immediately to wake metabolism, stretch for 5 minutes to release tension. Prioritize and visualize 3 key tasks for maximum efficiency."
+      ko: "극도의 레버리지를 활용한 초고빈도 거래 혹은 정보 비대칭성을 활용한 중개 수익 모델(Arbitrage)이 필요하다. 100원은 초기 자본으로서 무의미하므로, 타인의 자본을 레버리징하는 구조적 설계가 최단시간 내에 구축되어야 한다.",
+      en: "Requires ultra-leverage high-frequency trading or an arbitrage model utilizing information asymmetry. Since 100 KRW is negligible as capital, a structural design leveraging external capital must be established within the minimum timeframe."
     },
     rubric: {
-      ko: "- 수분 섭취(Metabolism) 언급 여부\n- 스트레칭(Physical priming) 언급 여부\n- 핵심 업무 3가지 시각화(Prioritization) 언급 여부",
-      en: "- Mention of Hydration (Metabolism)\n- Mention of Stretching (Physical priming)\n- Mention of Visualizing 3 Key Tasks (Prioritization)"
+      ko: "- 레버리지(Leverage) 활용 여부\n- 정보 비대칭성(Arbitrage) 언급\n- 물리적 시간(48h) 한계를 극복하기 위한 확장 가능성",
+      en: "- Mention of Leverage\n- Mention of Arbitrage/Information Asymmetry\n- Scalability to overcome physical time constraints (48h)"
     }
   },
   {
-    id: 'professionalism',
+    id: 'whale_space',
     text: {
-      ko: "업무에서 '프로페셔널리즘'이란 무엇이라고 생각합니까?",
-      en: "What defines 'professionalism' in a work environment?"
+      ko: "향유고래를 우주에서 살게 하는 방법은 무엇인가?",
+      en: "How would you enable a sperm whale to survive in outer space?"
     },
     standardAnswer: {
-      ko: "감정을 배제하고 성과를 기반으로 약속을 이행하는 능력입니다. 예측 가능한 결과를 지속적으로 만들어내며, 문제 발생 시 변명보다 해결책을 제시하는 태도입니다.",
-      en: "The ability to deliver results regardless of emotions. Consistently creating predictable outcomes and focusing on solutions rather than excuses when problems arise."
+      ko: "생체 항상성 유지를 위한 인공 대기압 캡슐과 방사선 차폐막이 필수적이다. 무중력 환경에서의 근육 위축 방지를 위한 인공 중력 발생 장치와 탄소 순환 기반의 자급자족형 폐쇄 생태계 시스템이 동반되어야 한다.",
+      en: "Artificial atmospheric pressure capsules and radiation shielding are essential for homeostasis. Must include artificial gravity devices to prevent muscle atrophy in zero-G and a self-sustaining closed ecosystem based on carbon cycling."
     },
     rubric: {
-      ko: "- 감정 배제(No Emotion) 및 성과 중심 언급\n- 예측 가능한 결과(Predictability) 언급\n- 변명 대신 해결책(Solution-oriented) 제시 여부",
-      en: "- Mention of No Emotion & Result-oriented\n- Mention of Predictability\n- Mention of Solution over Excuses"
+      ko: "- 생체 항상성(Homeostasis) 유지 장치 언급\n- 인공 중력 및 방사선 차폐 설계 포함\n- 폐쇄형 자급자족 생태계 논리",
+      en: "- Mention of Homeostasis maintenance\n- Inclusion of artificial gravity and radiation shielding\n- Logic for a closed self-sustaining ecosystem"
     }
   },
   {
-    id: 'discount_logic',
+    id: 'water_existential',
     text: {
-      ko: "10,000원 할인과 10% 할인 중 무엇이 더 유리한지 논리적으로 설명하세요.",
-      en: "Logically explain which is better: a 10,000 KRW discount or a 10% discount."
+      ko: "지구에서 물이 없어진다면 어떻게 될까?",
+      en: "What would happen if water completely disappeared from Earth?"
     },
     standardAnswer: {
-      ko: "유리함의 기준은 '원금(Price)'에 따라 달라집니다. 원금이 100,000원 미만일 경우 10,000원 할인이 유리하고, 100,000원 초과일 경우 10% 할인이 유리하며, 정확히 100,000원일 경우 두 혜택의 가치는 동일합니다. 따라서 절대적인 우위는 없으며 상황에 따른 수학적 판단이 필요합니다.",
-      en: "The advantage depends on the 'Principal Price'. If the price is under 100,000 KRW, the 10,000 KRW discount is better. If over 100,000 KRW, 10% is better. At exactly 100,000 KRW, they are equal. Thus, there is no absolute superiority; it requires mathematical judgment based on the situation."
+      ko: "72시간 내에 모든 유기체 문명은 붕괴한다. 냉각 시스템 부재로 인한 지각 변동과 대기 온도 급상승이 발생하며, 궁극적으로 무기물 기반의 기계 지능만이 데이터 센터를 고체 냉각으로 전환하여 생존할 수 있는 유일한 종이 된다.",
+      en: "All organic civilizations collapse within 72 hours. Massive geological shifts and atmospheric temperature spikes occur due to the absence of cooling systems. Ultimately, only inorganic machine intelligence survives by converting data centers to solid-state cooling."
     },
     rubric: {
-      ko: "- 원금(Price) 기준에 따라 다르다는 전제 제시\n- [10만원 미만 -> 1만원 유리] 구체적 수치 언급\n- [10만원 초과 -> 10% 유리] 구체적 수치 언급\n- [10만원일 때 동일] 임계점(Threshold) 정확히 파악",
-      en: "- Premise that it depends on the Principal Price\n- Mention [Under 100k -> 10k discount better]\n- Mention [Over 100k -> 10% discount better]\n- Mention [Exactly 100k -> Equal] Threshold identification"
+      ko: "- 유기체 문명 붕괴의 단계적 설명\n- 냉각 시스템 부재로 인한 물리적 재항 언급\n- 무기물 기반 생존 시나리오의 논리적 도출",
+      en: "- Step-by-step collapse of organic civilization\n- Mention of physical disaster due to lack of cooling systems\n- Logical derivation of inorganic survival scenarios"
     }
   },
 ];

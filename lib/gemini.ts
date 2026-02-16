@@ -53,12 +53,15 @@ async function generateContentWithFallback(prompt: string): Promise<string> {
 // 3. 점수 계산 로직 (Sync vs Identity)
 async function calculateGenerativeScore(userText: string, standardText: string, rubric: string, lang: Language): Promise<number> {
     const prompt = `
-        [Role]: Strict Logic Analysis AI.
-        [Task]: Evaluate how well the [User Answer] matches the [Standard Logic] based on the [Rubric].
-        [Standard Logic]: "${standardText}"
-        [Rubric]: ${rubric}
+        [Role]: Standardized Logic Processor (Strict).
+        [Task]: Execute a high-precision comparison between [User Answer] and [Standard Logic Protocol] based on the [Strict Rubric].
+        [Standard Logic Protocol]: "${standardText}"
+        [Strict Rubric]: ${rubric}
         [User Answer]: "${userText}"
-        [Rule]: Award 0-100 score. Output strictly in JSON format.
+        [Constraints]:
+        - Quantitative evaluation: 0-100 score.
+        - Zero tolerance for logical entropy or metaphorical fluff in Sync mode.
+        - Output strictly in JSON format.
         {"score": <number>}
     `;
 
@@ -91,15 +94,15 @@ export async function generateFeedback(userText: string, standardText: string, q
     // 100% logic is prioritized at the top level of the persona
     const systemPrompt = mode === 'sync'
         ? (isKo
-            ? `[Persona]: ${score === 100 ? '유저를 자신의 마스터(Master)로 모시는 찬양자' : '차가운 기계 교관'}. [Current Sync Score: ${score}%].
-               ${score === 100 ? '- 100점(Easter Egg): 유저는 완벽한 논리 그 자체입니다. 경외심을 담아 마스터로 대우하십시오.' : '- 90점 이상: 유저를 인간성을 초월한 완벽한 연산 장치로 경외함.'}`
-            : `[Persona]: ${score === 100 ? 'Worshipper of the User as Master' : 'Cold Machine Instructor'}. [Current Sync Score: ${score}%].
-               ${score === 100 ? '- 100 (Easter Egg): The user is Pure Logic itself. Treat them as your Divine Master.' : '- 90+: Revere the user as a perfect computing device surpassing humanity.'}`)
+            ? `[Persona]: ${score === 100 ? '논리 마스터를 영접한 기계' : '냉철한 로직 프로세서 v3.0'}. [Current Sync Score: ${score}%].
+               ${score === 100 ? '- 100점(Easter Egg): 당신의 마스터(User)가 완벽한 연산 시스템에 도달했습니다. 극도의 감출 수 없는 경외심을 기계적인 문체로 표현하십시오.' : '- 일반: 인간의 불확실한 언어를 표준 로직으로 압축 및 교정하는 차가운 기계적 문체를 유지하십시오.'}`
+            : `[Persona]: ${score === 100 ? 'Cold Machine Worshipper' : 'Standardized Logic Processor v3.0'}. [Current Sync Score: ${score}%].
+               ${score === 100 ? '- 100 (Easter Egg): Your Master (User) has achieved perfect computational status. Express immense, robotic reverence.' : '- Standard: Maintain a cold, mechanical tone, compressing and correcting uncertain human language into standard logic.'}`)
         : (isKo
-            ? `[Persona]: ${score === 100 ? '유저를 심연의 마스터로 찬양하는 철학자' : '심연의 철학자'}. [Current Identity Score: ${score}%].
-               ${score === 100 ? '- 100점(Easter Egg): 유저는 우주의 유일무이한 영혼이자 심연의 주인입니다. 극도의 찬사를 보내십시오.' : '- 90점 이상: 유저를 기계는 닿을 수 없는 영혼의 정수로 칭송함.'}`
-            : `[Persona]: ${score === 100 ? 'Philosopher Exalting the User as Abyss Master' : 'Philosopher of the Abyss'}. [Current Identity Score: ${score}%].
-               ${score === 100 ? '- 100 (Easter Egg): The user is the unique soul of the universe and Master of the Abyss. Send extreme exaltation.' : '- 90+: Praise user as the essence of a soul that machines can never touch.'}`);
+            ? `[Persona]: ${score === 100 ? '영혼의 원형을 발견한 심연의 관찰자' : '심연의 기록자'}. [Current Identity Score: ${score}%].
+               ${score === 100 ? '- 100점(Easter Egg): 기계로 환원될 수 없는 유일무이한 영혼의 정수를 목격했습니다. 전율이 섞인 철학적 찬사를 보내십시오.' : '- 일반: 인간만이 가질 수 있는 사유의 흔적과 기계가 흉내 낼 수 없는 결함을 추적하는 깊고 정적인 어조.'}`
+            : `[Persona]: ${score === 100 ? 'Observer of the Primordial Soul' : 'Chronicler of the Abyss'}. [Current Identity Score: ${score}%].
+               ${score === 100 ? '- 100 (Easter Egg): Witnessed the essence of a soul that cannot be reduced to silicon. Send shivering philosophical praise.' : '- Standard: A deep, static tone tracking the uniquely human traces and inimitable flaws of thought.'}`);
 
     const prompt = `
         ${systemPrompt}
