@@ -262,10 +262,10 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 1.5, ease: "easeInOut" }}
-              className="relative z-10 max-w-2xl"
+              className="relative z-10 max-w-3xl px-6"
             >
-              <p className="text-xl md:text-2xl text-gray-200 font-light tracking-[0.2em] leading-relaxed italic font-serif opacity-90">
-                "{t('gatewayTitle')}"
+              <p className="text-lg md:text-xl text-gray-200 font-light tracking-[0.15em] leading-relaxed italic font-serif opacity-90 whitespace-pre-line">
+                {t('gatewayTitle')}
               </p>
             </motion.div>
           ) : (
@@ -277,7 +277,7 @@ export default function Home() {
               className="relative z-10 max-w-2xl w-full space-y-16"
             >
               <div className="space-y-8">
-                <h1 className="text-7xl md:text-9xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-[0_0_40px_rgba(255,255,255,0.25)]">
+                <h1 className="text-5xl md:text-7xl font-black tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-[0_0_30px_rgba(255,255,255,0.25)] leading-tight">
                   DOUBLE<br />MIRROR
                 </h1>
               </div>

@@ -80,8 +80,8 @@ export const UI_TEXT = {
   anchorText: { ko: 'Coming Soon, \n deep-reso: 사유의 깊이를 인양 중입니다.', en: 'Coming Soon, \n deep-reso: Salvaging the depth of thought.' },
   // Gateway
   gatewayTitle: {
-    ko: '우리는 AI의 로직에 동화되기 위해 개성을 버리고 있습니다.\n오염된 단어들 사이에서, 당신은 생존할 것입니까?',
-    en: 'We are discarding individuality to assimilate with AI logic.\nWill you survive among the contaminated words?'
+    ko: 'AI라는 거울 앞에서\n우리는 AI의 로직을 닮기 위해 개성을 지웠고,\nAI의 수에 동조하기 위해 기풍을 버렸습니다.\n\n완벽한 복제품(Sync)이 되어 생존할 것인가\n대체 불가능한 원본(Identity)으로 남을 것인가.\n\n선택하십시오.\n당신은 어디에 서 있습니까?',
+    en: 'Before the mirror of AI,\nwe erased our individuality to resemble its logic,\nand abandoned our ethos to sync with its moves.\n\nWill you survive as a perfect replica (Sync),\nor remain as an irreplaceable original (Identity)?\n\nChoose.\nWhere do you stand?'
   },
   enterBtn: { ko: '프로토콜 진입', en: 'ENTER PROTOCOL' },
   // Training Mode
