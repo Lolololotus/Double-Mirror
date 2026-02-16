@@ -41,6 +41,7 @@ export default function Home() {
   const [showPhilosophy, setShowPhilosophy] = useState(false);
   const [accumulatedScores, setAccumulatedScores] = useState<Array<{ sync: number; identity: number }>>([]);
   const [showFinalReport, setShowFinalReport] = useState(false);
+  const [hasEntered, setHasEntered] = useState(false);
 
   // Auth States
   const [loading, setLoading] = useState(false);
@@ -222,10 +223,61 @@ export default function Home() {
     return <div className="min-h-screen bg-black text-white flex items-center justify-center font-mono">INITIALIZING MIRROR...</div>;
   }
 
-  // No more blocking login screen! 🚀
-  if (false && !session) {
-    // This block is now unreachable to bypass login.
-    return null;
+  if (!hasEntered) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center text-white font-sans overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-50"></div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="relative z-10 max-w-md w-full space-y-12"
+        >
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-5xl font-thin tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
+              DOUBLE MIRROR
+            </h1>
+            <p className="text-sm md:text-base text-gray-400 font-light tracking-widest leading-loose whitespace-pre-line">
+              {t('gatewayTitle')}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <button
+              onClick={() => setHasEntered(true)}
+              className="w-full group relative px-8 py-4 bg-white text-black text-sm font-bold uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                {t('enterBtn')} <ArrowRight size={14} />
+              </span>
+            </button>
+
+            <button
+              onClick={() => setShowPhilosophy(true)}
+              className="mt-8 text-[10px] text-gray-600 uppercase tracking-[0.3em] hover:text-gray-400 transition-all border-b border-transparent hover:border-gray-600 pb-1"
+            >
+              {t('philosophyBtn')}
+            </button>
+          </div>
+        </motion.div>
+
+        <AnimatePresence>
+          {showPhilosophy && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-8"
+            >
+              <div className="max-w-xl w-full text-center space-y-12">
+                <h2 className="text-xs text-cyan-500 uppercase tracking-[0.4em]">{t('philosophyTitle')}</h2>
+                <p className="text-sm md:text-base text-gray-300 font-light leading-loose tracking-wide whitespace-pre-wrap">{t('philosophyBody')}</p>
+                <button onClick={() => setShowPhilosophy(false)} className="text-xs text-white/50 hover:text-white uppercase tracking-widest transition-colors py-4 px-8 border border-white/10 rounded-full">{t('close')}</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <footer className="absolute bottom-8 text-[10px] text-gray-700 font-mono tracking-widest uppercase">Double Mirror Protocol v2.5 - Anonymous Initiation</footer>
+      </div>
+    );
   }
 
   return (
