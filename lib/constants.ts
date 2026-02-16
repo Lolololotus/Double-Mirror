@@ -71,7 +71,7 @@ export const UI_TEXT = {
   extracting: { ko: '데이터 인양 중...', en: 'SALVAGING DATA...' },
   refining: { ko: '사유 정제 중...', en: 'REFINING THOUGHT...' },
   polishing: { ko: '거울 닦는 중...', en: 'POLISHING MIRROR...' },
-  waiting: { ko: '시스템 신호 대기 중', en: 'AWAITING SIGNAL...' },
+  waiting: { ko: '당신의 답변에 대해 AI가 점수를 매기는 중입니다...', en: 'AI is scoring your answer...' },
   standardReflection: { ko: 'AI 표준 로직', en: 'AI STANDARD LOGIC' },
   analysisResult: { ko: '분석 데이터', en: 'ANALYSIS DATA' },
   syncMode: { ko: '기계 지능 동조 (AI Sync)', en: 'AI SYNC' },
@@ -143,6 +143,12 @@ export const UI_TEXT = {
   registerBtn: { ko: '트레이닝 등록', en: 'REGISTER TRAINING' },
   connectBtn: { ko: '심연 연결', en: 'CONNECT TO ABYSS' },
 };
+
+export const PHILOSOPHY_QUOTES = [
+  { ko: "AI의 로직을 닮기 위해 개성을 버렸는가?", en: "Did you discard your individuality to resemble AI's logic?" },
+  { ko: "오염된 단어들 사이에서 당신은 생존할 것인가?", en: "Will you survive among the contaminated words?" },
+  { ko: "코드가 된 사유 속에서 원본의 갈망을 찾으십시오.", en: "Find the longing for the original within thoughts turned into code." }
+];
 
 export const PERSONA_TIERS = {
   sync: [

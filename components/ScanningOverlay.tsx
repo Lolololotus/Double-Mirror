@@ -1,43 +1,57 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export function ScanningOverlay() {
+interface ScanningOverlayProps {
+    quote?: string;
+}
+
+export function ScanningOverlay({ quote }: ScanningOverlayProps) {
     return (
-        <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden flex flex-col justify-center items-center bg-black/50 backdrop-blur-sm">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-white text-2xl font-light tracking-[0.2em] mb-8"
-            >
-                ANALYZING PATTERNS...
-            </motion.div>
-
-            <div className="relative w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50">
+        <div className="absolute inset-0 z-[100] pointer-events-none overflow-hidden flex flex-col justify-center items-center bg-black/80 backdrop-blur-xl">
+            <AnimatePresence mode="wait">
                 <motion.div
-                    className="absolute top-0 left-0 w-full h-full bg-cyan-400 blur-md"
+                    key={quote}
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 1.05, y: -10 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="text-white text-lg md:text-2xl font-light tracking-[0.2em] mb-12 text-center max-w-2xl px-8 italic font-serif leading-relaxed"
+                >
+                    {quote || "ANALYZING PATTERNS..."}
+                </motion.div>
+            </AnimatePresence>
+
+            <div className="relative w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent">
+                <motion.div
+                    className="absolute top-0 left-0 w-full h-full bg-cyan-400 blur-sm"
                     animate={{
                         y: [-250, 250, -250],
-                        opacity: [0.5, 1, 0.5]
+                        opacity: [0.2, 0.5, 0.2]
                     }}
                     transition={{
-                        duration: 2,
+                        duration: 2.5,
                         ease: "linear",
                         repeat: Infinity
                     }}
                 />
             </div>
+
             <motion.div
-                className="absolute w-full h-1 bg-cyan-500 shadow-[0_0_20px_5px_rgba(6,182,212,0.5)]"
+                className="absolute w-full h-[2px] bg-cyan-500/50 shadow-[0_0_40px_rgba(6,182,212,0.3)]"
                 initial={{ top: '0%' }}
-                animate={{ top: ['0%', '100%', '0%'] }}
+                animate={{ top: ['10%', '90%', '10%'] }}
                 transition={{
-                    duration: 3,
+                    duration: 4,
                     ease: "easeInOut",
                     repeat: Infinity
                 }}
             />
+
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+                <div className="w-8 h-8 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin" />
+                <span className="text-[10px] text-cyan-500/50 uppercase tracking-[0.5em] font-mono">Scoring in progress...</span>
+            </div>
         </div>
     );
 }

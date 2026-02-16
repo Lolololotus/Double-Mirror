@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QUESTIONS, UI_TEXT, Language } from '@/lib/constants';
+import { QUESTIONS, UI_TEXT, Language, PHILOSOPHY_QUOTES } from '@/lib/constants';
 import { analyzeReflection } from './actions';
 import { ScanningOverlay } from '@/components/ScanningOverlay';
 import { DualGauge } from '@/components/DualGauge';
@@ -42,6 +42,7 @@ export default function Home() {
   const [accumulatedScores, setAccumulatedScores] = useState<Array<{ sync: number; identity: number }>>([]);
   const [showFinalReport, setShowFinalReport] = useState(false);
   const [hasEntered, setHasEntered] = useState(false);
+  const [activeQuoteIndex, setActiveQuoteIndex] = useState(0);
 
   // Auth States
   const [loading, setLoading] = useState(false);
@@ -110,6 +111,18 @@ export default function Home() {
       alert(t('checkEmail'));
     }
   };
+
+  // 3. Quote Cycling Logic
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isScanning) {
+      setActiveQuoteIndex(0);
+      timer = setInterval(() => {
+        setActiveQuoteIndex(prev => (prev + 1) % PHILOSOPHY_QUOTES.length);
+      }, 3000); // 3 seconds per quote
+    }
+    return () => clearInterval(timer);
+  }, [isScanning]);
 
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
@@ -226,18 +239,19 @@ export default function Home() {
   if (!hasEntered) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center text-white font-sans overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-50"></div>
+        <div className="absolute inset-0 bg-black opacity-80 backdrop-blur-3xl transition-opacity duration-1000"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,1)_100%)]"></div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="relative z-10 max-w-md w-full space-y-12"
+          className="relative z-10 max-w-2xl w-full space-y-16"
         >
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-thin tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
-              DOUBLE MIRROR
+          <div className="space-y-8">
+            <h1 className="text-6xl md:text-8xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+              DOUBLE<br />MIRROR
             </h1>
-            <p className="text-sm md:text-base text-gray-400 font-light tracking-widest leading-loose whitespace-pre-line">
+            <p className="text-lg md:text-xl text-gray-300 font-light tracking-[0.2em] leading-relaxed whitespace-pre-line max-w-lg mx-auto italic opacity-80">
               {t('gatewayTitle')}
             </p>
           </div>
@@ -282,7 +296,13 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-black text-white overflow-hidden flex flex-col md:flex-row font-sans selection:bg-white/30">
-      <AnimatePresence>{isScanning && <ScanningOverlay />}</AnimatePresence>
+      <AnimatePresence>
+        {isScanning && (
+          <ScanningOverlay
+            quote={PHILOSOPHY_QUOTES[activeQuoteIndex][lang]}
+          />
+        )}
+      </AnimatePresence>
 
       {/* LEFT: User Input */}
       <section className="flex-1 p-8 md:p-12 flex flex-col justify-start relative border-r border-white/10 bg-gradient-to-b from-gray-900 to-black">
