@@ -268,7 +268,7 @@ export default function Home() {
 
             <button
               onClick={() => setShowPhilosophy(true)}
-              className="mt-8 text-[10px] text-gray-600 uppercase tracking-[0.3em] hover:text-gray-400 transition-all border-b border-transparent hover:border-gray-600 pb-1"
+              className="mt-12 text-xs text-gray-400 uppercase tracking-[0.4em] hover:text-white transition-all duration-500 border-b border-white/10 hover:border-white pb-2 px-4"
             >
               {t('philosophyBtn')}
             </button>
