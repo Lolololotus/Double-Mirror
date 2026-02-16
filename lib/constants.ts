@@ -65,7 +65,7 @@ export const UI_TEXT = {
   title: { ko: 'DOUBLE MIRROR', en: 'DOUBLE MIRROR' },
   selectTopic: { ko: '프로토콜 선택', en: 'SELECT PROTOCOL' },
   yourReflection: { ko: '당신의 로직', en: 'YOUR LOGIC' },
-  placeholder: { ko: '여기에 당신의 생각을 입력하십시오...', en: 'Input your reasoning here...' },
+  placeholder: { ko: '당신의 동조율을 계산하기 위해 50자 이상의 답변를 입력하십시오...', en: 'Input at least 50 characters to salvage the abyss...' },
   analyzeBtn: { ko: '분석 시작', en: 'INITIATE ANALYSIS' },
   scanning: { ko: '사유 분석 시작...', en: 'INITIATING ANALYSIS...' },
   extracting: { ko: '데이터 인양 중...', en: 'SALVAGING DATA...' },
@@ -80,14 +80,14 @@ export const UI_TEXT = {
   anchorText: { ko: 'Coming Soon, \n deep-reso: 사유의 깊이를 인양 중입니다.', en: 'Coming Soon, \n deep-reso: Salvaging the depth of thought.' },
   // Gateway
   gatewayTitle: {
-    ko: 'AI라는 거울 앞에서,\n당신은 어디를 보고 있습니까?',
-    en: 'Before the mirror of AI,\nwhere is your reasoning headed?'
+    ko: '우리는 AI의 로직에 동화되기 위해 개성을 버리고 있습니다.\n오염된 단어들 사이에서, 당신은 생존할 것입니까?',
+    en: 'We are discarding individuality to assimilate with AI logic.\nWill you survive among the contaminated words?'
   },
   enterBtn: { ko: '프로토콜 진입', en: 'ENTER PROTOCOL' },
   // Training Mode
   testMode: { ko: '테스트 모드', en: 'TEST MODE' },
   trainingMode: { ko: 'AI 동조 훈련', en: 'AI SYNC TRAINING' },
-  proBadge: { ko: 'PRO', en: 'PRO' },
+  proBadge: { ko: 'BETA', en: 'BETA' },
   viewStandard: { ko: 'AI 표준 답변 확인', en: 'View AI Standard Answer' },
   lockedFeedback: { ko: '프롬프트 가이드 (Coming Soon)', en: 'Prompt Guide (Coming Soon)' },
   lockedDesc: { ko: '어떤 단어를 바꾸면 Sync율이 10% 더 올라가는지 분석해드립니다.', en: 'Analyze which words to change to increase Sync rate by 10%.' },

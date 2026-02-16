@@ -218,6 +218,18 @@ export default function Home() {
 
   const toggleLang = () => setLang(prev => prev === 'ko' ? 'en' : 'ko');
 
+  // Intro Stage Logic
+  const [introStage, setIntroStage] = useState<'manifesto' | 'gateway'>('manifesto');
+
+  useEffect(() => {
+    if (!hasEntered && introStage === 'manifesto') {
+      const timer = setTimeout(() => {
+        setIntroStage('gateway');
+      }, 4500); // Wait for manifesto to fade and switch
+      return () => clearTimeout(timer);
+    }
+  }, [hasEntered, introStage]);
+
   const theme = mode === 'sync' ? {
     primary: 'cyan',
     accent: 'cyan-500',
@@ -239,41 +251,57 @@ export default function Home() {
   if (!hasEntered) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center text-white font-sans overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-80 backdrop-blur-3xl transition-opacity duration-1000"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,1)_100%)]"></div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="relative z-10 max-w-2xl w-full space-y-16"
-        >
-          <div className="space-y-8">
-            <h1 className="text-6xl md:text-8xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-              DOUBLE<br />MIRROR
-            </h1>
-            <p className="text-lg md:text-xl text-gray-300 font-light tracking-[0.2em] leading-relaxed whitespace-pre-line max-w-lg mx-auto italic opacity-80">
-              {t('gatewayTitle')}
-            </p>
-          </div>
+        <div className="absolute inset-0 bg-black transition-opacity duration-1000"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,1)_100%)] opacity-80"></div>
 
-          <div className="space-y-4">
-            <button
-              onClick={() => setHasEntered(true)}
-              className="w-full group relative px-8 py-4 bg-white text-black text-sm font-bold uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
+        <AnimatePresence mode="wait">
+          {introStage === 'manifesto' ? (
+            <motion.div
+              key="manifesto"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+              className="relative z-10 max-w-2xl"
             >
-              <span className="relative z-10 flex items-center gap-2">
-                {t('enterBtn')} <ArrowRight size={14} />
-              </span>
-            </button>
+              <p className="text-xl md:text-2xl text-gray-200 font-light tracking-[0.2em] leading-relaxed italic font-serif opacity-90">
+                "{t('gatewayTitle')}"
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="gateway"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+              className="relative z-10 max-w-2xl w-full space-y-16"
+            >
+              <div className="space-y-8">
+                <h1 className="text-7xl md:text-9xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-[0_0_40px_rgba(255,255,255,0.25)]">
+                  DOUBLE<br />MIRROR
+                </h1>
+              </div>
 
-            <button
-              onClick={() => setShowPhilosophy(true)}
-              className="mt-12 text-xs text-gray-400 uppercase tracking-[0.4em] hover:text-white transition-all duration-500 border-b border-white/10 hover:border-white pb-2 px-4"
-            >
-              {t('philosophyBtn')}
-            </button>
-          </div>
-        </motion.div>
+              <div className="space-y-4">
+                <button
+                  onClick={() => setHasEntered(true)}
+                  className="w-full group relative px-8 py-5 bg-white text-black text-sm font-bold uppercase tracking-widest hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    {t('enterBtn')} <ArrowRight size={14} />
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setShowPhilosophy(true)}
+                  className="mt-12 text-xs text-gray-400 uppercase tracking-[0.4em] hover:text-white transition-all duration-500 border-b border-white/10 hover:border-white pb-2 px-4"
+                >
+                  {t('philosophyBtn')}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {showPhilosophy && (
@@ -289,7 +317,7 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-        <footer className="absolute bottom-8 text-[10px] text-gray-700 font-mono tracking-widest uppercase">Double Mirror Protocol v2.5 - Anonymous Initiation</footer>
+        <footer className="absolute bottom-8 text-[10px] text-gray-800 font-mono tracking-widest uppercase opacity-50">Double Mirror Protocol v8.2 - Origin Finality</footer>
       </div>
     );
   }
@@ -401,7 +429,14 @@ export default function Home() {
             <label className="text-xs text-gray-500 uppercase tracking-wider">{t('yourReflection')}</label>
             <div className="relative">
               <textarea value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder={t('placeholder')} className={clsx("w-full h-40 bg-white/5 border rounded-xl p-4 text-base focus:outline-none transition-all resize-none", inputText.length >= 50 ? `border-white/10 focus:${theme.border}` : "border-red-500/30")} />
-              <div className={clsx("absolute bottom-4 right-4 text-xs font-mono transition-colors", inputText.length >= 50 ? "text-cyan-400" : "text-gray-600")}>{inputText.length} / 50</div>
+              <div className={clsx(
+                "absolute bottom-4 right-4 text-[11px] font-mono tracking-widest transition-all duration-500",
+                inputText.length >= 50
+                  ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] font-bold"
+                  : "text-gray-500"
+              )}>
+                {lang === 'ko' ? '사유의 깊이' : 'DEPTH'}: {inputText.length} / 50+
+              </div>
             </div>
           </div>
 
