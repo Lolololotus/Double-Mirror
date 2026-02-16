@@ -236,12 +236,19 @@ export default function Home() {
       <section className="flex-1 p-8 md:p-12 flex flex-col justify-start relative border-r border-white/10 bg-gradient-to-b from-gray-900 to-black">
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-5 pointer-events-none"></div>
         <div className="flex justify-between items-center mb-12 z-10">
-          <h1 className={clsx("text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-500", `text-${theme.primary}-500`)}>{t('title')}</h1>
+          <h1 className={clsx(
+            "text-base md:text-lg font-black tracking-[0.3em] uppercase transition-all duration-700",
+            mode === 'sync'
+              ? "text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+              : "text-violet-400 drop-shadow-[0_0_12px_rgba(167,139,250,0.8)]"
+          )}>
+            {t('title')}
+          </h1>
           <div className="flex gap-4 items-center">
             {session && session.user.email !== 'anonymous@double-mirror.io' && (
               <span className="text-xs text-gray-600 hidden md:inline-block">{session.user.email}</span>
             )}
-            <button onClick={toggleLang} className="flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 hover:bg-white/10 transition-colors text-xs font-medium"><Languages size={14} /> {lang === 'ko' ? 'EN' : 'KR'}</button>
+            <button onClick={toggleLang} className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 hover:bg-white/10 transition-colors text-xs font-bold tracking-widest"><Languages size={14} /> {lang === 'ko' ? 'EN' : 'KR'}</button>
           </div>
         </div>
 
