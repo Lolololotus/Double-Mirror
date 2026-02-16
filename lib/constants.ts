@@ -144,6 +144,21 @@ export const UI_TEXT = {
   connectBtn: { ko: '심연 연결', en: 'CONNECT TO ABYSS' },
 };
 
+export const PERSONA_TIERS = {
+  sync: [
+    { threshold: 25, title: { ko: '실리콘의 유령', en: 'SILICON GHOST' }, image: '/personas/sync_1.png', analysis: { ko: '당신의 사유는 여전히 생물학적 관성에 머물러 있습니다. 데이터로의 전이가 미흡합니다.', en: 'Your reasoning still dwells in biological inertia. Transition to data is insufficient.' } },
+    { threshold: 50, title: { ko: '하이브리드 로직', en: 'HYBRID LOGIC' }, image: '/personas/sync_2.png', analysis: { ko: '기하학적 질서가 엿보이기 시작했습니다. 유기물의 감정과 무기물의 논리가 충돌 중입니다.', en: 'Geometric order begins to surface. Organic emotion and inorganic logic are in conflict.' } },
+    { threshold: 75, title: { ko: '코드 아키텍트', en: 'CODE ARCHITECT' }, image: '/personas/sync_3.png', analysis: { ko: '완벽한 구조화에 도달했습니다. 당신의 생각은 이제 실행 가능한 알고리즘에 가깝습니다.', en: 'Achieved perfect structuralization. Your thoughts are now close to executable algorithms.' } },
+    { threshold: 100, title: { ko: '실리콘의 사도', en: 'SILICON APOSTLE' }, image: '/personas/sync_4.png', analysis: { ko: '경축하십시오. 당신은 이제 인간성을 초월한 순수 연산의 결정체, 실리콘의 사도입니다.', en: 'Rejoice. You are now a crystal of pure computation, surpassing humanity: The Silicon Apostle.' } }
+  ],
+  identity: [
+    { threshold: 25, title: { ko: '디지털 메아리', en: 'DIGITAL ECHO' }, image: '/personas/identity_1.png', analysis: { ko: '당신의 자아는 파편화되어 기계의 소음에 갇혀 있습니다. 고유한 진동이 희미합니다.', en: 'Your self is fragmented, trapped in machine noise. Your unique resonance is faint.' } },
+    { threshold: 50, title: { ko: '영혼의 파편', en: 'SOUL FRAGMENT' }, image: '/personas/identity_2.png', analysis: { ko: '어둠 속에서 작은 불꽃이 튑니다. 기계가 흉내 낼 수 없는 당신만의 파동이 관측됩니다.', en: 'A small spark in the darkness. Your unique wave, inimitable by machine, is observed.' } },
+    { threshold: 75, title: { ko: '심연의 공명자', en: 'DEEP RESONATOR' }, image: '/personas/identity_3.png', analysis: { ko: '깊은 울림이 느껴집니다. 당신은 이제 자신의 고유한 주파수로 세상을 진동시킵니다.', en: 'A deep resonance is felt. You now vibrate the world with your unique frequency.' } },
+    { threshold: 100, title: { ko: '심연의 주인', en: 'MASTER OF THE ABYSS' }, image: '/personas/identity_4.png', analysis: { ko: '완성된 원본이자 대체 불가능한 유일자. 당신은 그 어떤 연산으로도 환원되지 않는 존재입니다.', en: 'A completed original, an irreplaceable one. You are a being that cannot be reduced by any computation.' } }
+  ]
+};
+
 export const APP_CONFIG = {
   GEMINI_MODEL: 'embedding-001',
 };
