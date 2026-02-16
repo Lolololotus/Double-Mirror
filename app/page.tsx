@@ -236,12 +236,15 @@ export default function Home() {
       <section className="flex-1 p-8 md:p-12 flex flex-col justify-start relative border-r border-white/10 bg-gradient-to-b from-gray-900 to-black">
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-5 pointer-events-none"></div>
         <div className="flex justify-between items-center mb-12 z-10">
-          <h1 className={clsx(
-            "text-base md:text-lg font-black tracking-[0.3em] uppercase transition-all duration-700",
-            mode === 'sync'
-              ? "text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.8)]"
-              : "text-violet-400 drop-shadow-[0_0_12px_rgba(167,139,250,0.8)]"
-          )}>
+          <h1
+            className={clsx(
+              "text-base md:text-lg font-black tracking-[0.3em] uppercase transition-all duration-700",
+              mode === 'sync' ? "text-cyan-400" : "text-violet-400"
+            )}
+            style={{
+              textShadow: mode === 'sync' ? '0 0 15px rgba(34,211,238,0.8)' : '0 0 15px rgba(167,139,250,0.8)'
+            }}
+          >
             {t('title')}
           </h1>
           <div className="flex gap-4 items-center">
