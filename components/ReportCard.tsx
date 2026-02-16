@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { toPng } from 'html-to-image';
 import { motion } from 'framer-motion';
 import { UI_TEXT, Language } from '@/lib/constants';
@@ -17,6 +17,7 @@ interface ReportCardProps {
 
 export const ReportCard: React.FC<ReportCardProps> = ({ mode, lang, scores, onClose }) => {
     const reportRef = useRef<HTMLDivElement>(null);
+    const [showEmailModal, setShowEmailModal] = useState(false);
     const t = (key: keyof typeof UI_TEXT) => UI_TEXT[key][lang];
 
     const validScores = scores.filter(s => typeof s.sync === 'number' && typeof s.identity === 'number');
@@ -25,12 +26,13 @@ export const ReportCard: React.FC<ReportCardProps> = ({ mode, lang, scores, onCl
     const avgSync = Math.round(displayScores.reduce((acc, s) => acc + s.sync, 0) / displayScores.length);
     const avgIdentity = Math.round(displayScores.reduce((acc, s) => acc + s.identity, 0) / displayScores.length);
 
-    console.log('📊 ReportCard Stats:', {
-        originalCount: scores.length,
-        validCount: validScores.length,
-        avgSync,
-        avgIdentity
-    });
+    // Auto-trigger email modal after 1.5s
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowEmailModal(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleDownload = async () => {
         if (reportRef.current === null) return;
@@ -185,9 +187,17 @@ export const ReportCard: React.FC<ReportCardProps> = ({ mode, lang, scores, onCl
                         </div>
                     </div>
 
-                    {/* EMAIL COLLECTION */}
-                    <EmailCollector lang={lang} />
+                    {/* FOOTER GRAPHICS & CREDO moved back to main layout, EmailCollector removed from here */}
                 </div>
+
+                {/* EMAIL COLLECTION MODAL (Outside reportRef to exclude from PNG) */}
+                <EmailCollector
+                    isOpen={showEmailModal}
+                    onClose={() => setShowEmailModal(false)}
+                    lang={lang}
+                    mode={mode}
+                    averageScore={isSync ? avgSync : avgIdentity}
+                />
 
                 {/* ACTIONS */}
                 <div className="grid gap-3 pt-4">

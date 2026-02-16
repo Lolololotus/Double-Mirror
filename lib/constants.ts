@@ -134,6 +134,14 @@ export const UI_TEXT = {
   saveReport: { ko: '성적표 저장하기', en: 'SAVE REPORT' },
   nextStep: { ko: '다음 프로토콜', en: 'NEXT PROTOCOL' },
   finalVerdict: { ko: '최종 판결', en: 'FINAL VERDICT' },
+
+  // Training Center Modal
+  trainingCenterTitle: { ko: 'SILICON TRAINING CENTER', en: 'SILICON TRAINING CENTER' },
+  abyssTitle: { ko: 'THE ABYSS OF IDENTITY', en: 'THE ABYSS OF IDENTITY' },
+  modalDescSync: { ko: '상위 1%의 논리적 정합성(Sync)을 달성하기 위한\n맞춤형 트레이닝 센터에 등록하시겠습니까?', en: 'Would you like to register for the Training Center\nto achieve top 1% logical consistency (Sync)?' },
+  modalDescIdentity: { ko: '기계가 흉내 낼 수 없는 당신만의 독보적 자아를\n더 깊게 탐구할 사유의 심연으로 초대합니다.', en: 'Inviting you to the Abyss of Thought to explore\nyour irreplaceable identity beyond machine logic.' },
+  registerBtn: { ko: '트레이닝 등록', en: 'REGISTER TRAINING' },
+  connectBtn: { ko: '심연 연결', en: 'CONNECT TO ABYSS' },
 };
 
 export const APP_CONFIG = {
