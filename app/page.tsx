@@ -361,7 +361,7 @@ export default function Home() {
               <button onClick={() => setIsTrainingMode(false)} className={clsx("px-4 py-2 text-xs font-bold tracking-wider rounded-md transition-all", !isTrainingMode ? "bg-white/10 text-white shadow-sm" : "text-gray-500 hover:text-gray-300")}>{t('testMode')}</button>
               <button onClick={() => setIsTrainingMode(true)} className={clsx("px-4 py-2 text-xs font-bold tracking-wider rounded-md transition-all flex items-center gap-2", isTrainingMode ? (mode === 'sync' ? "bg-cyan-500/20 text-cyan-400" : "bg-violet-500/20 text-violet-400") : "text-gray-500 hover:text-gray-300")}>
                 {mode === 'sync' ? t('trainingMode') : t('identityMode')}
-                {isTrainingMode && <span className={clsx("text-[10px] px-1 rounded font-bold", mode === 'sync' ? "bg-cyan-500 text-black" : "bg-violet-500 text-black")}>{mode === 'sync' ? "PRO" : "BETA"}</span>}
+                {isTrainingMode && <span className={clsx("text-[10px] px-1 rounded font-bold", mode === 'sync' ? "bg-cyan-500 text-black" : "bg-violet-500 text-black")}>BETA</span>}
               </button>
             </div>
           </div>
@@ -435,7 +435,7 @@ export default function Home() {
                   ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] font-bold"
                   : "text-gray-500"
               )}>
-                {lang === 'ko' ? '사유의 깊이' : 'DEPTH'}: {inputText.length} / 50+
+                {lang === 'ko' ? '사유 밀도' : 'DENSITY'}: {inputText.length} / 50+
               </div>
             </div>
           </div>
