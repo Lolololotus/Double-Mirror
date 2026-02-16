@@ -88,16 +88,16 @@ export const ReportCard: React.FC<ReportCardProps> = ({ mode, lang, scores, onCl
                             initial={{ y: 10, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.2 }}
-                            className="text-[10px] text-gray-500 tracking-[0.5em] font-bold uppercase mb-2"
+                            className="text-[10px] text-gray-400 tracking-[0.5em] font-bold uppercase mb-2"
                         >
                             {isSync ? 'Silicon Synthesis Type' : 'Identity Resonance Type'}
                         </motion.p>
                         <motion.h2
-                            initial={{ scale: 1.2, opacity: 0 }}
+                            initial={{ scale: 1.1, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", damping: 10 }}
+                            transition={{ type: "spring", damping: 12 }}
                             className={clsx(
-                                "text-4xl font-black tracking-tighter uppercase italic leading-none drop-shadow-2xl",
+                                "text-3xl font-black tracking-tighter uppercase italic leading-none drop-shadow-2xl",
                                 isSync ? "text-cyan-400" : "text-violet-400"
                             )}
                         >
@@ -105,28 +105,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ mode, lang, scores, onCl
                         </motion.h2>
                     </div>
 
-                    {/* IMAGE AREA (The Persona Icon) */}
-                    <div className="relative z-10 flex justify-center mb-10 h-64">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="relative aspect-square w-full max-w-[240px]"
-                        >
-                            {/* FALLBACK ICON IF IMAGE NOT GENERATED YET */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                                {isSync ? <Cpu size={120} className="text-cyan-500" /> : <Fingerprint size={120} className="text-violet-500" />}
-                            </div>
-                            <img
-                                src={currentPersona.image}
-                                alt="Persona avatar"
-                                className="w-full h-full object-contain mix-blend-screen drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]"
-                                onError={(e) => (e.currentTarget.style.display = 'none')}
-                            />
-                        </motion.div>
-                    </div>
-
-                    {/* SCORE HIGHLIGHT */}
+                    {/* SCORE HIGHLIGHT - Moved up since image is gone */}
                     <div className="relative z-10 flex flex-col items-center mb-8">
                         <div className="flex items-baseline gap-1">
                             <span className="text-5xl font-black text-white">{mainScore}</span>
